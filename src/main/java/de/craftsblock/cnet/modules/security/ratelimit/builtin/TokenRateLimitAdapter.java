@@ -5,12 +5,12 @@ import de.craftsblock.cnet.modules.security.auth.token.Token;
 import de.craftsblock.cnet.modules.security.ratelimit.RateLimitAdapter;
 import de.craftsblock.cnet.modules.security.ratelimit.RateLimitIndex;
 import de.craftsblock.craftsnet.api.http.Request;
-import de.craftsblock.craftsnet.api.utils.SessionStorage;
+import de.craftsblock.craftsnet.api.session.Session;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * The {@link TokenRateLimitAdapter} is a builtin implementation of {@link RateLimitAdapter}.
- * It enforces rate limiting based on the authentication token stored in the {@link SessionStorage}.
+ * It enforces rate limiting based on the authentication token stored in the {@link Session}.
  * <p>
  * Each unique token is tracked as a {@link RateLimitIndex}, and rate limits are applied individually.
  * </p>
@@ -35,19 +35,19 @@ public class TokenRateLimitAdapter extends RateLimitAdapter {
     }
 
     /**
-     * Adapts the given {@link Request} into a {@link RateLimitIndex} based on the authentication token stored in the {@link SessionStorage}.
+     * Adapts the given {@link Request} into a {@link RateLimitIndex} based on the authentication token stored in the {@link Session}.
      * <p>
      * If the session storage does not contain a valid authentication token, the method returns {@code null}.
      * </p>
      *
      * @param request The {@link Request} to adapt.
-     * @param storage The {@link SessionStorage} associated with the request, expected to contain the authentication token.
+     * @param session The {@link Session} associated with the request, expected to contain the authentication token.
      * @return A {@link RateLimitIndex} representing the token, or {@code null} if no token is found.
      */
     @Override
-    public @Nullable RateLimitIndex adapt(Request request, SessionStorage storage) {
-        if (!storage.containsKey("auth.token")) return null;
-        return RateLimitIndex.of(this, storage.getAsType("auth.token", Token.class));
+    public @Nullable RateLimitIndex adapt(Request request, Session session) {
+        if (!session.containsKey("auth.token")) return null;
+        return RateLimitIndex.of(this, session.getAsType("auth.token", Token.class));
     }
 
 }

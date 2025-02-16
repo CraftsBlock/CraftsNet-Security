@@ -3,7 +3,7 @@ package de.craftsblock.cnet.modules.security.ratelimit;
 import de.craftsblock.craftsnet.api.http.Exchange;
 import de.craftsblock.craftsnet.api.http.Request;
 import de.craftsblock.craftsnet.api.http.Response;
-import de.craftsblock.craftsnet.api.utils.SessionStorage;
+import de.craftsblock.craftsnet.api.session.Session;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.regex.Pattern;
@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
  * It enforces rate limiting policies for incoming {@link Request}s by mapping them to {@link RateLimitIndex} objects.
  * The adapter also manages configuration settings like maximum request count, expiration times, and response headers.
  * <p>
- * Subclasses must implement the {@link #adapt(Request, SessionStorage)} method to define custom rate limiting behavior.
+ * Subclasses must implement the {@link #adapt(Request, Session)} method to define custom rate limiting behavior.
  * </p>
  *
  * @author Philipp Maywald
@@ -95,10 +95,10 @@ public abstract class RateLimitAdapter {
      * Subclasses must override this method to provide custom mapping logic.
      *
      * @param request The incoming HTTP request.
-     * @param storage The session storage associated with the request.
+     * @param session The session storage associated with the request.
      * @return A {@link RateLimitIndex} representing the rate limit for the request, or {@code null} if no rate limit applies.
      */
-    public abstract @Nullable RateLimitIndex adapt(Request request, SessionStorage storage);
+    public abstract @Nullable RateLimitIndex adapt(Request request, Session session);
 
     /**
      * Creates a new {@link RateLimitInfo} instance for this adapter.

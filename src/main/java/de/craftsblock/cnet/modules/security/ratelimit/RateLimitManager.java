@@ -5,7 +5,7 @@ import de.craftsblock.cnet.modules.security.events.ratelimit.RateLimitExceededEv
 import de.craftsblock.cnet.modules.security.utils.Manager;
 import de.craftsblock.craftsnet.api.http.Exchange;
 import de.craftsblock.craftsnet.api.http.Request;
-import de.craftsblock.craftsnet.api.utils.SessionStorage;
+import de.craftsblock.craftsnet.api.session.Session;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.InvocationTargetException;
@@ -80,11 +80,11 @@ public class RateLimitManager implements Manager {
         if (this.adapters.isEmpty()) return false;
 
         final Request request = exchange.request();
-        final SessionStorage storage = exchange.storage();
+        final Session session = exchange.session();
 
         List<RateLimitAdapter> exceeded = new ArrayList<>();
         for (RateLimitAdapter adapter : adapters.values()) {
-            RateLimitIndex index = adapter.adapt(request, storage);
+            RateLimitIndex index = adapter.adapt(request, session);
             if (index == null) continue;
 
             RateLimitInfo info = indices.computeIfAbsent(index, r -> adapter.createInfo());

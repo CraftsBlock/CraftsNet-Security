@@ -10,8 +10,10 @@ import de.craftsblock.craftscore.event.EventHandler;
 import de.craftsblock.craftscore.event.EventPriority;
 import de.craftsblock.craftscore.event.ListenerAdapter;
 import de.craftsblock.craftscore.json.Json;
-import de.craftsblock.craftsnet.api.annotations.AutoRegister;
+import de.craftsblock.craftsnet.addon.meta.Startup;
 import de.craftsblock.craftsnet.api.http.Exchange;
+import de.craftsblock.craftsnet.api.http.Response;
+import de.craftsblock.craftsnet.autoregister.meta.AutoRegister;
 import de.craftsblock.craftsnet.events.EventWithCancelReason;
 import de.craftsblock.craftsnet.events.requests.PreRequestEvent;
 import de.craftsblock.craftsnet.events.requests.routes.RouteRequestEvent;
@@ -29,7 +31,7 @@ import java.lang.reflect.InvocationTargetException;
  * @version 1.0.0
  * @since 1.0.0-SNAPSHOT
  */
-@AutoRegister
+@AutoRegister(startup = Startup.LOAD)
 public class PreRequestListener implements ListenerAdapter {
 
     /**
@@ -37,12 +39,11 @@ public class PreRequestListener implements ListenerAdapter {
      * event occurs and processes the authentication chains.
      *
      * @param event The {@link PreRequestEvent} containing information about the request.
-     * @throws IOException               If an error occurs while processing the request or response.
      * @throws InvocationTargetException If an error occurs while calling / processing the event system
      * @throws IllegalAccessException    If an error occurs while calling / processing the event system
      */
     @EventHandler(priority = EventPriority.LOWEST)
-    public void handleAuthChains(PreRequestEvent event) throws IOException, InvocationTargetException, IllegalAccessException {
+    public void handleAuthChains(PreRequestEvent event) throws InvocationTargetException, IllegalAccessException {
         Exchange exchange = event.getExchange();
 
         GenericAuthResultEvent authEvent = new AuthSuccessEvent(exchange);
@@ -71,10 +72,9 @@ public class PreRequestListener implements ListenerAdapter {
      * event occurs and processes the rate limit chain.
      *
      * @param event The {@link RouteRequestEvent} containing information about the request.
-     * @throws IOException If an error occurs while processing the request or response.
      */
     @EventHandler(priority = EventPriority.HIGH)
-    public void handleRateLimiter(RouteRequestEvent event) throws IOException {
+    public void handleRateLimiter(RouteRequestEvent event) {
         handleRateLimiter(event, event.getExchange());
     }
 
@@ -83,10 +83,9 @@ public class PreRequestListener implements ListenerAdapter {
      * event occurs and processes the rate limit chain.
      *
      * @param event The {@link ShareRequestEvent} containing information about the share request.
-     * @throws IOException If an error occurs while processing the request or response.
      */
     @EventHandler(priority = EventPriority.HIGH)
-    public void handleRateLimiter(ShareRequestEvent event) throws IOException {
+    public void handleRateLimiter(ShareRequestEvent event) {
         handleRateLimiter(event, event.getExchange());
     }
 
@@ -95,9 +94,8 @@ public class PreRequestListener implements ListenerAdapter {
      *
      * @param event    The {@link EventWithCancelReason} that was fired.
      * @param exchange The {@link Exchange} containing information about the request.
-     * @throws IOException If an error occurs while processing the request or response.
      */
-    public void handleRateLimiter(EventWithCancelReason event, Exchange exchange) throws IOException {
+    public void handleRateLimiter(EventWithCancelReason event, Exchange exchange) {
         if (CNetSecurity.getRateLimitManager().isRateLimited(exchange)) {
             // Cancel the event
             event.setCancelled(true);

@@ -3,7 +3,7 @@ package de.craftsblock.cnet.modules.security.events.auth;
 import de.craftsblock.craftsnet.api.http.Exchange;
 import de.craftsblock.craftsnet.api.http.Request;
 import de.craftsblock.craftsnet.api.http.Response;
-import de.craftsblock.craftsnet.api.utils.SessionStorage;
+import de.craftsblock.craftsnet.api.session.Session;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -17,7 +17,7 @@ import org.jetbrains.annotations.NotNull;
  * @see Exchange
  * @see Request
  * @see Response
- * @see SessionStorage
+ * @see Session
  * @since 1.0.0-SNAPSHOT
  */
 public abstract class GenericAuthResultEvent extends GenericAuthEvent {
@@ -64,10 +64,10 @@ public abstract class GenericAuthResultEvent extends GenericAuthEvent {
     /**
      * Gets the session storage associated with this event.
      *
-     * @return The associated {@link SessionStorage}.
+     * @return The associated {@link Session}.
      */
-    public SessionStorage getStorage() {
-        return exchange.storage();
+    public Session getStorage() {
+        return exchange.session();
     }
 
 }

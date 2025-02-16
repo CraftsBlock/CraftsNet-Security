@@ -4,7 +4,7 @@ import de.craftsblock.cnet.modules.security.AddonEntrypoint;
 import de.craftsblock.cnet.modules.security.ratelimit.RateLimitAdapter;
 import de.craftsblock.cnet.modules.security.ratelimit.RateLimitIndex;
 import de.craftsblock.craftsnet.api.http.Request;
-import de.craftsblock.craftsnet.api.utils.SessionStorage;
+import de.craftsblock.craftsnet.api.session.Session;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -29,18 +29,18 @@ public class IPRateLimitAdapter extends RateLimitAdapter {
      * @param parent The {@link AddonEntrypoint} representing the parent addon using this adapter.
      */
     public IPRateLimitAdapter(AddonEntrypoint parent) {
-        super("IP", 1);
+        super("IP", 500);
     }
 
     /**
      * Adapts the given {@link Request} into a {@link RateLimitIndex} based on the client's IP address.
      *
      * @param request The {@link Request} to adapt.
-     * @param storage The {@link SessionStorage} associated with the request.
+     * @param session The {@link Session} associated with the request.
      * @return A {@link RateLimitIndex} representing the client's IP address, or {@code null} if adaptation fails.
      */
     @Override
-    public @Nullable RateLimitIndex adapt(Request request, SessionStorage storage) {
+    public @Nullable RateLimitIndex adapt(Request request, Session session) {
         return RateLimitIndex.of(this, request.getIp());
     }
 

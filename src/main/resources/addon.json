@@ -8,6 +8,6 @@
   "website": "https://craftsblock.de",
   "version": "1.0.0",
   "dependencies": [
-    "org.springframework.security:spring-security-crypto:6.3.0"
+    "org.springframework.security:spring-security-crypto:6.3.3"
   ]
 }

@@ -7,7 +7,6 @@ import de.craftsblock.cnet.modules.security.events.auth.token.TokenUsedEvent;
 import de.craftsblock.craftsnet.api.http.Exchange;
 import de.craftsblock.craftsnet.api.http.HttpMethod;
 import de.craftsblock.craftsnet.api.http.Request;
-import de.craftsblock.craftsnet.api.utils.SessionStorage;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
 /**
@@ -50,21 +49,21 @@ public class TokenAuthAdapter implements AuthAdapter {
     @Override
     public void authenticate(AuthResult result, Exchange exchange) {
         final Request request = exchange.request();
-        final SessionStorage storage = exchange.storage();
+        final Session session = exchange.session();
 
         // Retrieve the authorization header from the request
         String auth_header = request.getHeader(AUTH_HEADER);
 
         // Check if the header is present
         if (auth_header == null) {
-            failAuth(result, "Auth header not present or wrong auth type!");
+            failAuth(result, 400, "Auth header not present or wrong auth type!");
             return;
         }
 
         // Split the auth header and check if it has two values and is of the correct type
         String[] header = auth_header.split(" ");
         if (header.length != 2 || !AUTH_TYPE.equalsIgnoreCase(header[0])) {
-            failAuth(result, "No valid auth token present!");
+            failAuth(result, 400, "No valid auth token present!");
             return;
         }
 
@@ -110,7 +109,7 @@ public class TokenAuthAdapter implements AuthAdapter {
         } catch (NumberFormatException | IllegalStateException e) {
             failAuth(result, "No valid auth token present!");
         } catch (Exception e) {
-            failAuth(result, "Failed to verify your token!");
+            failAuth(result, 500, "Failed to verify your token!");
             CNetSecurity.getAddonEntrypoint().logger().error(e, "Failed to verify the api token!");
         }
     }

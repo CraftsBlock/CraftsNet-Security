@@ -60,7 +60,10 @@ public class PreRequestListener implements ListenerAdapter {
             authEvent = new AuthFailedEvent(exchange);
 
             // Send an error response back to the client
-            exchange.response().print(Json.empty().set("error", result.getCancelReason()));
+            Response response = exchange.response();
+            if (!response.headersSent()) response.setCode(result.getCode());
+            response.print(Json.empty().set("status", String.valueOf(result.getCode()))
+                    .set("message", result.getCancelReason()));
             break;
         }
 
@@ -102,7 +105,7 @@ public class PreRequestListener implements ListenerAdapter {
             event.setCancelReason("RATELIMITED");
 
             // Send an error response back to the client
-            exchange.response().print(Json.empty().set("error", "You have been rate limited!"));
+            exchange.response().print(Json.empty().set("status", "429").set("message", "You have been rate limited!"));
         }
     }
 

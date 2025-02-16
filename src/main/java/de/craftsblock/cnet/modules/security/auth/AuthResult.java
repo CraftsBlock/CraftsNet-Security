@@ -13,6 +13,7 @@ package de.craftsblock.cnet.modules.security.auth;
 public class AuthResult {
 
     private boolean success = true;
+    private int code = 403;
     private String cancelReason = "";
 
     /**
@@ -34,8 +35,18 @@ public class AuthResult {
      * @param reason The reason for cancellation, providing context for the failure.
      */
     public void cancel(String reason) {
+        this.cancel(403, reason);
+    }
+
+    /**
+     * Cancels the authentication with a specific reason.
+     *
+     * @param reason The reason for cancellation, providing context for the failure.
+     */
+    public void cancel(int code, String reason) {
         this.cancel();
         this.cancelReason = reason;
+        this.code = code;
     }
 
     /**
@@ -64,6 +75,15 @@ public class AuthResult {
      */
     public String getCancelReason() {
         return cancelReason;
+    }
+
+    /**
+     * Returns the http status code for cancelling the authentication process.
+     *
+     * @return The http status code.
+     */
+    public int getCode() {
+        return code;
     }
 
 }

@@ -38,4 +38,16 @@ public interface AuthAdapter {
         result.cancel(reason);
     }
 
+    /**
+     * Marks the authentication process as failed. This method is used to set the failure state
+     * in the {@link AuthResult} object, including the reason for the failure.
+     *
+     * @param code   The response http code.
+     * @param result The {@link AuthResult} object that stores the result of the authentication process.
+     * @param reason A string explaining why the authentication failed.
+     */
+    default void failAuth(AuthResult result, int code, String reason) {
+        result.cancel(code, reason);
+    }
+
 }

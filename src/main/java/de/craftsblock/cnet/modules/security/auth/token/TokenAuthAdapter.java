@@ -7,7 +7,7 @@ import de.craftsblock.cnet.modules.security.events.auth.token.TokenUsedEvent;
 import de.craftsblock.craftsnet.api.http.Exchange;
 import de.craftsblock.craftsnet.api.http.HttpMethod;
 import de.craftsblock.craftsnet.api.http.Request;
-import org.springframework.security.crypto.bcrypt.BCrypt;
+import de.craftsblock.craftsnet.api.session.Session;
 
 /**
  * The {@link TokenAuthAdapter} class implements the {@link AuthAdapter} interface to provide authentication
@@ -70,44 +70,18 @@ public class TokenAuthAdapter implements AuthAdapter {
         // Extract the token from the authorization header
         String key = header[1];
 
-        // Split the token into parts
-        String[] parts = key.split("_");
-        // Validate the number of parts in the token
-        if (parts.length != 2) {
-            failAuth(result, "No valid auth token present!");
+        String url = request.getUrl();
+        String domain = request.getDomain();
+        HttpMethod method = request.getHttpMethod();
+        Token token = CNetSecurity.getTokenManager().getValidatedToken(url, domain, method, key);
+        if (token == null) {
+            failAuth(result, "You do not have access to this ressource!");
             return;
         }
 
         try {
-            // Extract the ID from the token
-            String part = parts[1];
-            if (part.length() <= 16) throw new IllegalStateException();
-            long id = Long.parseLong(part.substring(0, 16), 16);
-
-            // Retrieve the token from the token manager
-            Token token = CNetSecurity.getTokenManager().get(id);
-            if (token == null) throw new IllegalStateException();
-
-            // Extract the secret from the token and verify it
-            String secret = part.substring(16);
-            if (!BCrypt.checkpw(secret, token.hash())) throw new IllegalStateException();
-
-            // Check the token permissions
-            String url = request.getUrl();
-            String domain = request.getDomain();
-            HttpMethod method = request.getHttpMethod();
-            for (TokenPermission permission : token.permissions())
-                if (permission.isHttpMethodAllowed(method)
-                        && permission.isDomainAllowed(domain)
-                        && permission.isPathAllowed(url)) {
-                    storage.put("auth.token", token);
-                    CNetSecurity.callEvent(new TokenUsedEvent(token));
-                    return;
-                }
-
-            failAuth(result, "You do not have access to this ressource!");
-        } catch (NumberFormatException | IllegalStateException e) {
-            failAuth(result, "No valid auth token present!");
+            session.put("auth.token", token);
+            CNetSecurity.callEvent(new TokenUsedEvent(token));
         } catch (Exception e) {
             failAuth(result, 500, "Failed to verify your token!");
             CNetSecurity.getAddonEntrypoint().logger().error(e, "Failed to verify the api token!");

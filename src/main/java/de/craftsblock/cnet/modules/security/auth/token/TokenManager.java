@@ -7,7 +7,10 @@ import de.craftsblock.cnet.modules.security.events.auth.token.TokenRevokeEvent;
 import de.craftsblock.cnet.modules.security.utils.Manager;
 import de.craftsblock.craftscore.json.Json;
 import de.craftsblock.craftscore.json.JsonParser;
+import de.craftsblock.craftsnet.api.http.HttpMethod;
 import de.craftsblock.craftsnet.utils.Utils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import java.io.File;
@@ -130,6 +133,81 @@ public final class TokenManager extends ConcurrentHashMap<Long, Token> implement
             return Map.entry("cnet_" + Long.toHexString(token.id()) + secret, token);
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Retrieves a {@link Token} based on the given token string.
+     * The token string is expected to contain an identifier in hexadecimal format.
+     * If the token is invalid or cannot be parsed, this method returns {@code null}.
+     *
+     * @param token The token string to be parsed.
+     * @return The corresponding {@link Token} if found, otherwise {@code null}.
+     */
+    public @Nullable Token getToken(@NotNull String token) {
+        // Split the token into parts
+        String[] parts = token.split("_");
+        if (parts.length == 0) return null;
+
+        String part = parts.length >= 2 ? parts[1] : parts[0];
+        if (part.length() < 16) return null;
+
+        try {
+            long id = Long.parseLong(part.substring(0, 16), 16);
+            return CNetSecurity.getTokenManager().get(id);
+        } catch (NumberFormatException | IllegalStateException ignored) {
+            return null;
+        }
+    }
+
+    /**
+     * Retrieves and validates a {@link Token} for a given request.
+     * This method first attempts to retrieve the token using {@link #getToken(String)}.
+     * If the token exists, it verifies the token's validity based on the provided url, domain, http method, and secret.
+     *
+     * @param url    The requested URL.
+     * @param domain The domain from which the request originates.
+     * @param method The HTTP method of the request.
+     * @param token  The token string to be validated.
+     * @return The validated {@link Token} if authentication is successful, otherwise {@code null}.
+     */
+    public @Nullable Token getValidatedToken(@NotNull String url, @NotNull String domain, @NotNull HttpMethod method, @NotNull String token) {
+        Token realToken = getToken(token);
+        if (realToken == null) return null;
+
+        String[] parts = token.split("_");
+        if (parts.length < 2 || parts[1].length() < 16) return null;
+
+        String secret = parts[1].substring(16);
+        return isTokenValid(url, domain, method, secret, realToken) ? realToken : null;
+    }
+
+    /**
+     * Validates whether a given {@link Token} is authorized for the requested action.
+     * The token is verified using its hashed secret and checked for permission against the specified http method, domain, and url.
+     *
+     * @param url    The requested URL.
+     * @param domain The domain from which the request originates.
+     * @param method The HTTP method of the request.
+     * @param secret The secret extracted from the token for authentication.
+     * @param token  The {@link Token} object to be validated.
+     * @return {@code true} if the token is valid and authorized, otherwise {@code false}.
+     */
+    public boolean isTokenValid(@NotNull String url, @NotNull String domain, @NotNull HttpMethod method, @NotNull String secret, Token token) {
+        if (token == null || secret.isBlank()) return false;
+
+        try {
+            // Extract the secret from the token and verify it
+            if (!BCrypt.checkpw(secret, token.hash())) return false;
+
+            // Check the token permissions
+            return token.permissions().stream()
+                    .anyMatch(permission -> permission.isHttpMethodAllowed(method)
+                            && permission.isDomainAllowed(domain)
+                            && permission.isPathAllowed(url));
+        } catch (Exception e) {
+            CNetSecurity.getAddonEntrypoint().logger().error(e, "Failed to verify the api token!");
+            return false;
         }
     }
 

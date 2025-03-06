@@ -6,8 +6,6 @@ import de.craftsblock.craftsnet.api.http.Response;
 import de.craftsblock.craftsnet.api.session.Session;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.regex.Pattern;
-
 /**
  * The {@link RateLimitAdapter} is an abstract class that defines the structure for rate limiting logic.
  * It enforces rate limiting policies for incoming {@link Request}s by mapping them to {@link RateLimitIndex} objects.
@@ -18,18 +16,13 @@ import java.util.regex.Pattern;
  *
  * @author Philipp Maywald
  * @author CraftsBlock
- * @version 1.0.0
+ * @version 1.0.1
  * @see RateLimitIndex
  * @see RateLimitInfo
  * @see Request
  * @since 1.0.0-SNAPSHOT
  */
 public abstract class RateLimitAdapter {
-
-    /**
-     * A {@link Pattern} used to validate adapter IDs. Only alphabetic characters are allowed.
-     */
-    public static final Pattern ID_CHECK = Pattern.compile("^[a-zA-Z]+$");
 
     /**
      * The maximum allowed expiration time in milliseconds (31 days).
@@ -42,7 +35,7 @@ public abstract class RateLimitAdapter {
     private final boolean headers;
 
     /**
-     * Constructs a new {@code RateLimitAdapter} with the specified ID and maximum requests.
+     * Constructs a new {@link RateLimitAdapter} with the specified ID and maximum requests.
      * The expiration time defaults to 60 seconds, and headers are included in the response.
      *
      * @param id  The ID of the adapter (must contain only alphabetic characters).
@@ -55,7 +48,7 @@ public abstract class RateLimitAdapter {
     }
 
     /**
-     * Constructs a new {@code RateLimitAdapter} with the specified ID, maximum requests, and expiration time.
+     * Constructs a new {@link RateLimitAdapter} with the specified ID, maximum requests, and expiration time.
      * Headers are included in the response by default.
      *
      * @param id     The ID of the adapter (must contain only alphabetic characters).
@@ -69,7 +62,7 @@ public abstract class RateLimitAdapter {
     }
 
     /**
-     * Constructs a new {@code RateLimitAdapter} with the specified parameters.
+     * Constructs a new {@link RateLimitAdapter} with the specified parameters.
      *
      * @param id      The ID of the adapter (must contain only alphabetic characters).
      * @param max     The maximum number of requests allowed within the expiration period.
@@ -79,11 +72,14 @@ public abstract class RateLimitAdapter {
      * @throws AssertionError        If the expiration time is not within the allowed range.
      */
     public RateLimitAdapter(String id, long max, long expire, boolean headers) {
-        if (!ID_CHECK.matcher(id).matches())
+        if (!id.matches("[^a-zA-Z]+"))
             throw new IllegalStateException("Rate limiting adapter IDs may only contain letters! (Invalid ID: '" + id +
                     "', set for: " + getClass().getName() + ")");
 
-        assert expire > 0 && expire <= MAX_EXPIRE_MILLIS;
+        if (expire <= 0 || expire > MAX_EXPIRE_MILLIS)
+            throw new IllegalArgumentException("The expire time must be greater than 0 and less or equal than " +
+                    MAX_EXPIRE_MILLIS + "! (Got: " + expire + ")");
+
         this.id = id.toUpperCase();
         this.max = max;
         this.expire = expire;

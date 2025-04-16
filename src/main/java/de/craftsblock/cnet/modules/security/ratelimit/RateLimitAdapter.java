@@ -16,7 +16,7 @@ import org.jetbrains.annotations.Nullable;
  *
  * @author Philipp Maywald
  * @author CraftsBlock
- * @version 1.0.1
+ * @version 1.0.2
  * @see RateLimitIndex
  * @see RateLimitInfo
  * @see Request
@@ -72,7 +72,7 @@ public abstract class RateLimitAdapter {
      * @throws AssertionError        If the expiration time is not within the allowed range.
      */
     public RateLimitAdapter(String id, long max, long expire, boolean headers) {
-        if (!id.matches("[^a-zA-Z]+"))
+        if (!id.matches("^[a-zA-Z]+$"))
             throw new IllegalStateException("Rate limiting adapter IDs may only contain letters! (Invalid ID: '" + id +
                     "', set for: " + getClass().getName() + ")");
 

@@ -8,7 +8,7 @@ import de.craftsblock.cnet.modules.security.utils.Manager;
 import de.craftsblock.craftscore.json.Json;
 import de.craftsblock.craftscore.json.JsonParser;
 import de.craftsblock.craftsnet.api.http.HttpMethod;
-import de.craftsblock.craftsnet.utils.Utils;
+import de.craftsblock.craftsnet.utils.PassphraseUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.security.crypto.bcrypt.BCrypt;
@@ -28,7 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author Philipp Maywald
  * @author CraftsBlock
- * @version 1.0.0
+ * @version 1.0.1
  * @since 1.0.0-SNAPSHOT
  */
 public final class TokenManager extends ConcurrentHashMap<Long, Token> implements Manager {
@@ -123,7 +123,7 @@ public final class TokenManager extends ConcurrentHashMap<Long, Token> implement
      */
     public Map.Entry<String, Token> generateToken(List<TokenPermission> permissions) {
         try {
-            String secret = Utils.secureRandomPassphrase(45, 70, false);
+            String secret = PassphraseUtils.generateSecure(45, 70, false);
             String hash = BCrypt.hashpw(secret, BCrypt.gensalt());
 
             Token token = Token.of(hash);

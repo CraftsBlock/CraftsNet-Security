@@ -3,13 +3,11 @@ package de.craftsblock.cnet.modules.security.auth.chains;
 import de.craftsblock.cnet.modules.security.auth.AuthAdapter;
 import de.craftsblock.cnet.modules.security.auth.AuthResult;
 import de.craftsblock.craftsnet.api.http.Exchange;
+import de.craftsblock.craftsnet.api.http.HttpMethod;
 import de.craftsblock.craftsnet.api.http.Request;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * The {@link SimpleAuthChain} class is a concrete implementation of the {@link AuthChain} class,
@@ -21,13 +19,13 @@ import java.util.regex.Pattern;
  *
  * @author Philipp Maywald
  * @author CraftsBlock
- * @version 1.0.0
+ * @version 1.1.0
  * @since 1.0.0-SNAPSHOT
  */
 public class SimpleAuthChain extends AuthChain {
 
     private final ConcurrentLinkedQueue<AuthAdapter> adapters = new ConcurrentLinkedQueue<>();
-    private final List<String> excluded = new ArrayList<>();
+    private final List<Exclusion> exclusions = new ArrayList<>();
 
     /**
      * Authenticates the provided {@link Exchange} by passing it through the chain of
@@ -42,9 +40,8 @@ public class SimpleAuthChain extends AuthChain {
         final Request request = exchange.request();
         final AuthResult result = new AuthResult();
 
-        Pattern pattern = Pattern.compile(String.join("|", excluded));
-        Matcher matcher = pattern.matcher(request.getUrl());
-        if (matcher.matches()) return result;
+        if (exclusions.stream().anyMatch(exclusion -> exclusion.isExcluded(request)))
+            return result;
 
         // Iterate over each adapter in the chain and authenticate the request.
         for (AuthAdapter adapter : adapters) {
@@ -98,25 +95,114 @@ public class SimpleAuthChain extends AuthChain {
     }
 
     /**
-     * Adds a new url pattern to the exclusion list, preventing matching requests from undergoing authentication.
+     * Adds an url pattern to be excluded from authentication.
      *
-     * @param pattern The exclusion pattern to add, typically a regex string matching URLs to exclude.
+     * @param pattern A regular expression matching request urls to exclude.
      * @return The instance of {@link SimpleAuthChain} used for chain method calls.
      */
     public SimpleAuthChain addExclusion(String pattern) {
-        excluded.add(pattern);
+        return addExclusion(pattern, HttpMethod.ALL);
+    }
+
+    /**
+     * Adds an url pattern to be excluded from authentication for the specified http methods.
+     *
+     * @param pattern A regular expression matching request URLs to exclude.
+     * @param methods One or more {@link HttpMethod methods} for which the pattern should be excluded.
+     * @return The instance of {@link SimpleAuthChain} used for chain method calls.
+     */
+    public SimpleAuthChain addExclusion(String pattern, HttpMethod... methods) {
+        exclusions.add(new Exclusion(pattern, normalizedMethods(methods)));
         return this;
     }
 
     /**
-     * Removes an url pattern from the exclusion list, allowing matching requests to undergo authentication again.
+     * Removes all exclusion entries matching the given url pattern.
+     * <p>Any {@link Exclusion} whose pattern equals the provided {@code pattern} will be removed</p>
      *
-     * @param pattern The exclusion pattern to remove.
-     * @return The instance of {@link SimpleAuthChain} used for chain method calls.
+     * @param pattern The regular expression pattern of request URLs to remove from exclusions
+     * @return The current {@link SimpleAuthChain} instance, to allow method chaining
      */
     public SimpleAuthChain removeExclusion(String pattern) {
-        excluded.remove(pattern);
+        return removeExclusion(pattern, HttpMethod.ALL);
+    }
+
+    /**
+     * Removes exclusion entries matching the given url pattern for the specified http methods.
+     * <p>If an {@link Exclusion} with the same pattern exists and any of its methods matches one of
+     * the provided {@code methods}, that exclusion entry will be removed from the list.</p>
+     *
+     * @param pattern The regular expression pattern of request URLs to remove from exclusions
+     * @param methods One or more {@link HttpMethod methods} for which the pattern should no longer be excluded
+     * @return The current {@link SimpleAuthChain} instance, to allow method chaining
+     */
+    public SimpleAuthChain removeExclusion(String pattern, HttpMethod... methods) {
+        exclusions.removeIf(exclusion -> {
+            if (!exclusion.pattern().equals(pattern)) return false;
+
+            Collection<HttpMethod> excludedMethods = Arrays.asList(exclusion.methods());
+            return Arrays.stream(methods).anyMatch(excludedMethods::contains);
+        });
         return this;
+    }
+
+    /**
+     * Expands any composite {@link HttpMethod methods} into their
+     * constituent methods and returns a flat array of real methods.
+     *
+     * @param methods One or more {@link HttpMethod}s, possibly composite, to normalize.
+     * @return An array of individual {@link HttpMethod}s after expansion.
+     */
+    private HttpMethod[] normalizedMethods(HttpMethod... methods) {
+        Set<HttpMethod> realMethods = new HashSet<>();
+
+        for (HttpMethod method : methods)
+            switch (method) {
+                case ALL, ALL_RAW -> {
+                    List<HttpMethod> subMethods = Arrays.stream(method.getMethods()).map(HttpMethod::parse).toList();
+                    realMethods.addAll(subMethods);
+                }
+                default -> realMethods.add(method);
+            }
+
+        return realMethods.toArray(HttpMethod[]::new);
+    }
+
+    /**
+     * Internal record representing a URL pattern exclusion for one or more HTTP methods.
+     *
+     * @param pattern A regular expression for matching request URLs.
+     * @param methods The HTTP methods for which the pattern is excluded.
+     * @author Philipp Maywald
+     * @author CraftsBlock
+     * @version 1.0.0
+     * @see HttpMethod
+     * @since 1.0.0-SNAPSHOT
+     */
+    private record Exclusion(String pattern, HttpMethod... methods) {
+
+        /**
+         * Checks whether the given {@link Request} matches this exclusion.
+         *
+         * @param request The incoming HTTP request to check.
+         * @return {@code true} if the request’s URL and method match this exclusion.
+         */
+        boolean isExcluded(Request request) {
+            return isExcluded(request.getUrl(), request.getHttpMethod());
+        }
+
+        /**
+         * Checks whether the given URL and {@link HttpMethod} match this exclusion.
+         *
+         * @param url    The request URL to match against the exclusion pattern.
+         * @param method The HTTP method to check for exclusion.
+         * @return {@code true} if the URL matches the pattern and the method is in the exclusion list.
+         */
+        boolean isExcluded(String url, HttpMethod method) {
+            if (!url.matches(pattern)) return false;
+            return Arrays.asList(methods).contains(method);
+        }
+
     }
 
 }

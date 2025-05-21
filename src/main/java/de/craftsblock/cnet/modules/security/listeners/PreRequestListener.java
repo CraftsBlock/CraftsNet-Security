@@ -10,8 +10,10 @@ import de.craftsblock.craftscore.event.EventHandler;
 import de.craftsblock.craftscore.event.EventPriority;
 import de.craftsblock.craftscore.event.ListenerAdapter;
 import de.craftsblock.craftscore.json.Json;
+import de.craftsblock.craftsnet.CraftsNet;
 import de.craftsblock.craftsnet.addon.meta.Startup;
 import de.craftsblock.craftsnet.api.http.Exchange;
+import de.craftsblock.craftsnet.api.http.Request;
 import de.craftsblock.craftsnet.api.http.Response;
 import de.craftsblock.craftsnet.autoregister.meta.AutoRegister;
 import de.craftsblock.craftsnet.events.EventWithCancelReason;
@@ -28,11 +30,22 @@ import java.lang.reflect.InvocationTargetException;
  *
  * @author Philipp Maywald
  * @author CraftsBlock
- * @version 1.0.0
+ * @version 1.1.0
  * @since 1.0.0-SNAPSHOT
  */
 @AutoRegister(startup = Startup.LOAD)
 public class PreRequestListener implements ListenerAdapter {
+
+    private final CraftsNet craftsNet;
+
+    /**
+     * Constructs a new {@link PreRequestEvent}.
+     *
+     * @param craftsNet The {@link CraftsNet} instance bound to this {@link ListenerAdapter}.
+     */
+    public PreRequestListener(CraftsNet craftsNet) {
+        this.craftsNet = craftsNet;
+    }
 
     /**
      * Handles the {@link PreRequestEvent}. This method is triggered when a pre-request
@@ -45,6 +58,7 @@ public class PreRequestListener implements ListenerAdapter {
     @EventHandler(priority = EventPriority.LOWEST)
     public void handleAuthChains(PreRequestEvent event) throws InvocationTargetException, IllegalAccessException {
         Exchange exchange = event.getExchange();
+        final Request request = exchange.request();
 
         GenericAuthResultEvent authEvent = new AuthSuccessEvent(exchange);
 
@@ -64,6 +78,14 @@ public class PreRequestListener implements ListenerAdapter {
             if (!response.headersSent()) response.setCode(result.getCode());
             response.print(Json.empty().set("status", String.valueOf(result.getCode()))
                     .set("message", result.getCancelReason()));
+
+            craftsNet.logger().debug("%s %s from %s \u001b[38;5;9m[%s]".formatted(
+                    request.getHttpMethod(),
+                    request.getRawUrl(),
+                    request.getIp(),
+                    "AUTH FAILED"
+            ));
+
             break;
         }
 

@@ -35,9 +35,12 @@ public record RateLimitIndex(@Nullable RateLimitAdapter adapter, @NotNull Object
         if (o == null || getClass() != o.getClass()) return false;
         RateLimitIndex that = (RateLimitIndex) o;
 
-        if (this.isGlobal())
+        if (this.isGlobal()) {
             if (!that.isGlobal() || !Objects.equals(this.adapter(), that.adapter()))
                 return false;
+
+        } else if (this.adapter == null || !this.adapter.equals(that.adapter))
+            return false;
 
         return Objects.equals(this.source(), that.source());
     }

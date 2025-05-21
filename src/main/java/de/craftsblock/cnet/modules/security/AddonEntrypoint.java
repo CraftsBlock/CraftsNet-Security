@@ -13,7 +13,7 @@ import de.craftsblock.craftsnet.addon.meta.annotations.Meta;
  *
  * @author Philipp Maywald
  * @author CraftsBlock
- * @version 1.0.0
+ * @version 1.0.1
  * @since 1.0.0-SNAPSHOT
  */
 @Meta(name = "CNetSecurity")
@@ -32,13 +32,7 @@ public class AddonEntrypoint extends Addon {
         CNetSecurity.register(new AuthChainManager());
         CNetSecurity.register(new TokenManager());
         CNetSecurity.register(new RateLimitManager());
-    }
 
-    /**
-     * Called when the addon is enabled.
-     */
-    @Override
-    public void onEnable() {
         // Create a new default auth chain
         AuthChainManager chains = CNetSecurity.getAuthChainManager();
         if (chains != null) {

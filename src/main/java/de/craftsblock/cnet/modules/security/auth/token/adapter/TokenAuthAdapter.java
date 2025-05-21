@@ -25,7 +25,7 @@ import java.util.Map;
  *
  * @author Philipp Maywald
  * @author CraftsBlock
- * @version 1.0.1
+ * @version 1.0.2
  * @see TokenAuthType
  * @see TokenUsedEvent
  * @since 1.0.0-SNAPSHOT
@@ -119,7 +119,7 @@ public class TokenAuthAdapter implements AuthAdapter {
         }
 
         if (result.isCancelled()) return;
-        failAuth(result, 400, "Auth not present or wrong auth type!");
+        failAuth(result, 401, "Auth not present or wrong auth type!");
     }
 
     /**

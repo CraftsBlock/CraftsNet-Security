@@ -7,13 +7,13 @@ package de.craftsblock.cnet.modules.security.auth;
  *
  * @author Philipp Maywald
  * @author CraftsBlock
- * @version 1.0.0
+ * @version 1.0.1
  * @since 1.0.0-SNAPSHOT
  */
 public class AuthResult {
 
     private boolean success = true;
-    private int code = 403;
+    private int code = 401;
     private String cancelReason = "";
 
     /**

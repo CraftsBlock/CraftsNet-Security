@@ -11,6 +11,7 @@ import de.craftsblock.craftsnet.api.http.HttpMethod;
 import de.craftsblock.craftsnet.api.http.Request;
 import de.craftsblock.craftsnet.api.http.cookies.Cookie;
 import de.craftsblock.craftsnet.api.session.Session;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -25,7 +26,7 @@ import java.util.Map;
  *
  * @author Philipp Maywald
  * @author CraftsBlock
- * @version 1.0.2
+ * @version 1.0.3
  * @see TokenAuthType
  * @see TokenUsedEvent
  * @since 1.0.0-SNAPSHOT
@@ -38,6 +39,8 @@ public class TokenAuthAdapter implements AuthAdapter {
     public static final String HEADER_AUTH_TYPE = "bearer";
 
     private final EnumMap<TokenAuthType, String> authTypes = new EnumMap<>(TokenAuthType.class);
+
+    private String tokenSessionKey = null;
 
     /**
      * Enables token authentication for the given authentication type using a default name.
@@ -89,6 +92,29 @@ public class TokenAuthAdapter implements AuthAdapter {
      */
     public boolean isEnabled(TokenAuthType type) {
         return this.authTypes.containsKey(type);
+    }
+
+    /**
+     * Sets the key where the used token should be stored in the session
+     * of the exchange. If the session key is {@code null} the token will
+     * not be stored in the session.
+     *
+     * @param sessionKey The key where the token should be stored.
+     */
+    public void setTokenSessionKey(@Nullable String sessionKey) {
+        this.tokenSessionKey = sessionKey;
+    }
+
+    /**
+     * Retrieves the key where the used token is stored inside the session.
+     * If the token is not stored anywhere in the session this method returns
+     * {@code null}.
+     *
+     * @return The key where the token is stored, or {@code null} when the token
+     * is not stored in the session.
+     */
+    public @Nullable String getTokenSessionKey() {
+        return tokenSessionKey;
     }
 
     /**
@@ -173,7 +199,9 @@ public class TokenAuthAdapter implements AuthAdapter {
         }
 
         try {
-            session.put("auth.token", token);
+            if (tokenSessionKey != null && !tokenSessionKey.isBlank())
+                session.put(tokenSessionKey, token);
+
             CNetSecurity.callEvent(new TokenUsedEvent(token, type));
         } catch (Exception e) {
             failAuth(result, 500, "Failed to verify your token!");

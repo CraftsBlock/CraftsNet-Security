@@ -30,7 +30,7 @@ import java.lang.reflect.InvocationTargetException;
  *
  * @author Philipp Maywald
  * @author CraftsBlock
- * @version 1.1.0
+ * @version 1.1.1
  * @since 1.0.0-SNAPSHOT
  */
 @AutoRegister(startup = Startup.LOAD)
@@ -55,8 +55,10 @@ public class PreRequestListener implements ListenerAdapter {
      * @throws InvocationTargetException If an error occurs while calling / processing the event system
      * @throws IllegalAccessException    If an error occurs while calling / processing the event system
      */
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler
     public void handleAuthChains(PreRequestEvent event) throws InvocationTargetException, IllegalAccessException {
+        if (event.isCancelled()) return;
+
         Exchange exchange = event.getExchange();
         final Request request = exchange.request();
 

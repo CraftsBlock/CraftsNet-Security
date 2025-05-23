@@ -30,7 +30,7 @@ import java.lang.reflect.InvocationTargetException;
  *
  * @author Philipp Maywald
  * @author CraftsBlock
- * @version 1.1.1
+ * @version 1.1.2
  * @since 1.0.0-SNAPSHOT
  */
 @AutoRegister(startup = Startup.LOAD)
@@ -62,8 +62,6 @@ public class PreRequestListener implements ListenerAdapter {
         Exchange exchange = event.getExchange();
         final Request request = exchange.request();
 
-        GenericAuthResultEvent authEvent = new AuthSuccessEvent(exchange);
-
         // Iterate through each authentication chain
         for (AuthChain chain : CNetSecurity.getAuthChainManager()) {
             // Authenticate the incoming request using the current chain
@@ -73,7 +71,7 @@ public class PreRequestListener implements ListenerAdapter {
             if (!result.isCancelled()) continue;
 
             event.setCancelled(true); // Cancel the event
-            authEvent = new AuthFailedEvent(exchange);
+            AuthFailedEvent authFailedEvent = new AuthFailedEvent(exchange);
 
             // Send an error response back to the client
             Response response = exchange.response();
@@ -88,10 +86,13 @@ public class PreRequestListener implements ListenerAdapter {
                     "AUTH FAILED"
             ));
 
-            break;
+            CNetSecurity.callEvent(authFailedEvent);
+
+            return;
         }
 
-        CNetSecurity.callEvent(authEvent);
+        AuthSuccessEvent authSuccessEvent = new AuthSuccessEvent(exchange);
+        CNetSecurity.callEvent(authSuccessEvent);
     }
 
     /**
@@ -126,10 +127,14 @@ public class PreRequestListener implements ListenerAdapter {
         if (CNetSecurity.getRateLimitManager().isRateLimited(exchange)) {
             // Cancel the event
             event.setCancelled(true);
-            event.setCancelReason("RATELIMITED");
+            event.setCancelReason("RATE LIMITED");
 
             // Send an error response back to the client
-            exchange.response().print(Json.empty().set("status", "429").set("message", "You have been rate limited!"));
+            Response response = exchange.response();
+            if (!response.headersSent()) exchange.response().setCode(429);
+            response.print(Json.empty()
+                    .set("status", "429")
+                    .set("message", "You have been rate limited!"));
         }
     }
 

@@ -28,7 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author Philipp Maywald
  * @author CraftsBlock
- * @version 1.0.1
+ * @version 1.0.2
  * @since 1.0.0-SNAPSHOT
  */
 public final class TokenManager extends ConcurrentHashMap<Long, Token> implements Manager {
@@ -132,7 +132,7 @@ public final class TokenManager extends ConcurrentHashMap<Long, Token> implement
 
             return Map.entry("cnet_" + Long.toHexString(token.id()) + secret, token);
         } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Could not generate a new token", e);
         }
     }
 
@@ -206,8 +206,7 @@ public final class TokenManager extends ConcurrentHashMap<Long, Token> implement
                             && permission.isDomainAllowed(domain)
                             && permission.isPathAllowed(url));
         } catch (Exception e) {
-            CNetSecurity.getAddonEntrypoint().logger().error(e, "Failed to verify the api token!");
-            return false;
+            throw new RuntimeException("Could not verify the token", e);
         }
     }
 

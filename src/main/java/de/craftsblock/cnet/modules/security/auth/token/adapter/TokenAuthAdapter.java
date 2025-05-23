@@ -26,7 +26,7 @@ import java.util.Map;
  *
  * @author Philipp Maywald
  * @author CraftsBlock
- * @version 1.0.3
+ * @version 1.0.4
  * @see TokenAuthType
  * @see TokenUsedEvent
  * @since 1.0.0-SNAPSHOT
@@ -170,7 +170,7 @@ public class TokenAuthAdapter implements AuthAdapter {
                 String auth_header = request.getHeader(name);
 
                 // Check if the header is present
-                if (auth_header == null) yield null;
+                if (auth_header == null || auth_header.isBlank()) yield null;
 
                 // Split the auth header and check if it has two values and is of the correct type
                 String[] header = auth_header.split(" ");
@@ -187,7 +187,7 @@ public class TokenAuthAdapter implements AuthAdapter {
         };
 
         if (result.isCancelled()) return true;
-        if (secret == null) return false;
+        if (secret == null || secret.isBlank()) return false;
 
         String url = request.getUrl();
         String domain = request.getDomain();

@@ -6,7 +6,7 @@
     "CraftsBlock"
   ],
   "website": "https://craftsblock.de",
-  "version": "1.0.0",
+  "version": "1.0.0-pre7",
   "dependencies": [
     "org.springframework.security:spring-security-crypto:6.3.3"
   ]

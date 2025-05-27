@@ -23,7 +23,7 @@ dependencies {
     // CraftsBlock dependencies ----------------------------------------------------------------------------------------
 
     implementation "de.craftsblock:craftscore:3.8.3-SNAPSHOT"
-    implementation "de.craftsblock:craftsnet:3.3.5-SNAPSHOT"
+    implementation "de.craftsblock:craftsnet:3.4.1-SNAPSHOT"
 
     // Third party dependencies ----------------------------------------------------------------------------------------
 

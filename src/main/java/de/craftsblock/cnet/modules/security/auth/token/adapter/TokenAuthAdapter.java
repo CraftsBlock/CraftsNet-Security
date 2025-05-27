@@ -26,7 +26,7 @@ import java.util.Map;
  *
  * @author Philipp Maywald
  * @author CraftsBlock
- * @version 1.0.4
+ * @version 1.0.5
  * @see TokenAuthType
  * @see TokenUsedEvent
  * @since 1.0.0-SNAPSHOT
@@ -134,7 +134,7 @@ public class TokenAuthAdapter implements AuthAdapter {
         if (result.isCancelled()) return;
 
         if (authTypes.isEmpty()) {
-            failAuth(result, 501, "No auth type has been set up on the server!");
+            failAuth(result, 501, "No auth type has been set up!");
             return;
         }
 
@@ -145,7 +145,7 @@ public class TokenAuthAdapter implements AuthAdapter {
         }
 
         if (result.isCancelled()) return;
-        failAuth(result, 401, "Auth not present or wrong auth type!");
+        failAuth(result, 401, "Requires authentication");
     }
 
     /**
@@ -175,7 +175,7 @@ public class TokenAuthAdapter implements AuthAdapter {
                 // Split the auth header and check if it has two values and is of the correct type
                 String[] header = auth_header.split(" ");
                 if (header.length != 2 || !HEADER_AUTH_TYPE.equalsIgnoreCase(header[0])) {
-                    failAuth(result, 400, "No valid auth token present!");
+                    failAuth(result, 400, "Invalid authorization header!");
                     yield null;
                 }
 

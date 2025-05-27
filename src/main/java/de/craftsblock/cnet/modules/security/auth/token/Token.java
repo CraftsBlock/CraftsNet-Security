@@ -18,7 +18,7 @@ import java.util.List;
  * @param permissions a list of {@link TokenPermission}, defining access control rules for the token.
  * @author Philipp Maywald
  * @author CraftsBlock
- * @version 1.0.1
+ * @version 1.0.2
  * @since 1.0.0-SNAPSHOT
  */
 public record Token(long id, String hash, List<TokenPermission> permissions) implements Entity {
@@ -49,18 +49,6 @@ public record Token(long id, String hash, List<TokenPermission> permissions) imp
     }
 
     /**
-     * Creates a {@link Token} object from a {@link Json} object.
-     * The JSON must contain the token ID, hash, and permission details.
-     *
-     * @param json the {@link Json} object containing the token data.
-     * @return a new {@link Token} object based on the provided JSON data.
-     */
-    public static Token of(Json json) {
-        return of(json.getLong("id"), json.getString("hash"),
-                new ArrayList<>(json.getJsonList("permissions").stream().map(TokenPermission::of).toList()));
-    }
-
-    /**
      * Creates a new {@link  Token} object using a hash.
      * The token ID is generated using the {@link Snowflake} utility.
      * The token will be created with empty permissions by default.
@@ -81,7 +69,7 @@ public record Token(long id, String hash, List<TokenPermission> permissions) imp
      * @param permissions a list of {@link TokenPermission} associated with this token.
      * @return a new {@link Token} object.
      */
-    static Token of(long id, String hash, List<TokenPermission> permissions) {
+    public static Token of(long id, String hash, List<TokenPermission> permissions) {
         return new Token(id, hash, permissions);
     }
 }

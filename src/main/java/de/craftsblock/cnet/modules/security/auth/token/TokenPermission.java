@@ -2,6 +2,7 @@ package de.craftsblock.cnet.modules.security.auth.token;
 
 import de.craftsblock.cnet.modules.security.utils.Entity;
 import de.craftsblock.craftscore.json.Json;
+import de.craftsblock.craftscore.utils.id.Snowflake;
 import de.craftsblock.craftsnet.api.http.HttpMethod;
 
 import java.util.Arrays;
@@ -10,30 +11,18 @@ import java.util.regex.Pattern;
 
 /**
  * This class represents a permission model for a token, defining access
- * control based on a combination of path patterns, domain patterns, and HTTP methods.
+ * control based on a combination of path patterns, domain patterns, and http methods.
  *
  * @param path    a regular expression pattern representing the allowed path.
  * @param domain  a regular expression pattern representing the allowed domain.
  * @param methods a variable number of {@link HttpMethod} values representing
- *                the allowed HTTP methods (e.g., GET, POST).
+ *                the allowed http methods (e.g., GET, POST).
  * @author Philipp Maywald
  * @author CraftsBlock
- * @version 1.1.0
+ * @version 1.1.1
  * @since 1.0.0-SNAPSHOT
  */
-public record TokenPermission(Pattern path, Pattern domain, HttpMethod... methods) implements Entity {
-
-    /**
-     * Creates a new instance of {@link TokenPermission}.
-     *
-     * @param path    a regular expression representing the allowed path.
-     * @param domain  a regular expression representing the allowed domain.
-     * @param methods a variable number of {@link HttpMethod} values representing
-     *                the allowed HTTP methods (e.g., GET, POST).
-     */
-    public TokenPermission(String path, String domain, HttpMethod... methods) {
-        this(Pattern.compile(path), Pattern.compile(domain), methods);
-    }
+public record TokenPermission(long id, String path, String domain, HttpMethod... methods) implements Entity {
 
     /**
      * Checks if a given pattern is a wildcard pattern.
@@ -42,8 +31,8 @@ public record TokenPermission(Pattern path, Pattern domain, HttpMethod... method
      * @param pattern the pattern to check.
      * @return {@code true} if the pattern is a wildcard, {@code false} otherwise.
      */
-    private boolean isWildcard(Pattern pattern) {
-        return pattern.pattern().equals("*") || pattern.pattern().equals(".*");
+    private boolean isWildcard(String pattern) {
+        return pattern.equals("*") || pattern.equals(".*");
     }
 
     /**
@@ -53,8 +42,8 @@ public record TokenPermission(Pattern path, Pattern domain, HttpMethod... method
      * @param pattern the pattern to match against.
      * @return {@code true} if the value matches the pattern, {@code false} otherwise.
      */
-    private boolean isAllowed(String value, Pattern pattern) {
-        return pattern.matcher(value).matches();
+    private boolean isAllowed(String value, String pattern) {
+        return value.matches(pattern);
     }
 
     /**
@@ -110,31 +99,54 @@ public record TokenPermission(Pattern path, Pattern domain, HttpMethod... method
 
     /**
      * Serializes the {@link TokenPermission} object into a {@link Json} object.
-     * The serialization includes the path, domain, and allowed HTTP methods.
+     * The serialization includes the path, domain, and allowed http methods.
      *
      * @return a {@link Json} object representing the serialized permission details.
      */
     @Override
     public Json serialize() {
         return Json.empty()
+                .set("id", id())
                 .set("path", path())
                 .set("domain", domain())
                 .set("methods", Arrays.stream(methods()).map(HttpMethod::name).toList());
     }
 
     /**
-     * Constructs a {@link TokenPermission} object from a {@link Json} object.
-     * The JSON must contain the path, domain, and allowed HTTP methods.
+     * Creates a new {@link TokenPermission} with a given path and http methods.
+     * The domain pattern defaults to a wildcard (".*").
      *
-     * @param json the {@link Json} object containing the permission data.
-     * @return a new {@code TokenPermission} object based on the provided JSON data.
+     * @param path    the regular expression pattern for the path.
+     * @param methods the allowed http methods for this permission.
+     * @return a new {@link TokenPermission} instance.
      */
-    static TokenPermission of(Json json) {
-        return new TokenPermission(
-                Pattern.compile(json.getString("path")),
-                Pattern.compile(json.getString("domain")),
-                json.getStringList("methods").stream().map(HttpMethod::parse).toArray(HttpMethod[]::new)
-        );
+    public static TokenPermission of(String path, HttpMethod... methods) {
+        return TokenPermission.of(path, ".*", methods);
+    }
+
+    /**
+     * Creates a new {@link TokenPermission} with a given path, domain, and http methods.
+     *
+     * @param path    the regular expression pattern for the path.
+     * @param domain  the regular expression pattern for the domain.
+     * @param methods the allowed http methods for this permission.
+     * @return a new {@link TokenPermission} instance.
+     */
+    public static TokenPermission of(String path, String domain, HttpMethod... methods) {
+        return TokenPermission.of(Snowflake.generate(), path, domain, methods);
+    }
+
+    /**
+     * Creates a new {@link TokenPermission} with the specified id, path, domain, and http methods.
+     *
+     * @param id      the unique id of the permission (usually generated via Snowflake or read from storage).
+     * @param path    the regular expression pattern for the path.
+     * @param domain  the regular expression pattern for the domain.
+     * @param methods the allowed http methods for this permission.
+     * @return a new {@link TokenPermission} instance.
+     */
+    public static TokenPermission of(long id, String path, String domain, HttpMethod... methods) {
+        return new TokenPermission(id, path, domain, methods);
     }
 
 }

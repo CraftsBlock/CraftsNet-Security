@@ -1,19 +1,18 @@
 package de.craftsblock.cnet.modules.security.auth.token;
 
-import com.google.gson.JsonElement;
 import de.craftsblock.cnet.modules.security.CNetSecurity;
+import de.craftsblock.cnet.modules.security.auth.token.driver.storage.TokenStorageDriver;
 import de.craftsblock.cnet.modules.security.events.auth.token.TokenCreateEvent;
 import de.craftsblock.cnet.modules.security.events.auth.token.TokenRevokeEvent;
 import de.craftsblock.cnet.modules.security.utils.Manager;
-import de.craftsblock.craftscore.json.Json;
-import de.craftsblock.craftscore.json.JsonParser;
+import de.craftsblock.craftscore.annotations.Experimental;
 import de.craftsblock.craftsnet.api.http.HttpMethod;
 import de.craftsblock.craftsnet.utils.PassphraseUtils;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
-import java.io.File;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -30,27 +29,30 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author Philipp Maywald
  * @author CraftsBlock
- * @version 1.2.0
+ * @version 1.3.0
  * @since 1.0.0-SNAPSHOT
  */
 public final class TokenManager extends ConcurrentHashMap<Long, Token> implements Manager {
 
-    private final File saveFile;
+    private static TokenStorageDriver driver;
+
+    @Experimental
+    @ApiStatus.Experimental
+    public static void setDriver(TokenStorageDriver driver) {
+        TokenManager.driver = driver;
+    }
+
+    @Experimental
+    @ApiStatus.Experimental
+    public static TokenStorageDriver getDriver() {
+        return driver;
+    }
 
     /**
-     * Constructs a new {@link TokenManager} and loads tokens from the save file.
-     * The tokens are stored in a JSON file located in the addon's data folder.
-     * If the file contains a valid json array, tokens are deserialized and loaded into the manager.
+     * Constructs a new {@link TokenManager} and loads all tokens from the drive.
      */
     public TokenManager() {
-        saveFile = new File(CNetSecurity.getAddonEntrypoint().getDataFolder(), "tokens.json");
-        Json json = JsonParser.parse(saveFile);
-        if (!json.getObject().isJsonArray()) return;
-
-        for (JsonElement element : json.getObject().getAsJsonArray()) {
-            Token token = Token.of(JsonParser.parse(element));
-            this.put(token.id(), token);
-        }
+        driver.loadAll().forEach(token -> this.put(token.id(), token));
     }
 
     /**
@@ -93,16 +95,14 @@ public final class TokenManager extends ConcurrentHashMap<Long, Token> implement
         }
 
         this.remove(token.id());
+        driver.delete(token);
     }
 
     /**
-     * Saves the current tokens in the token manager to a json file. The file is stored
-     * in the addon's data folder. All tokens are serialized and saved as a json array.
+     * Saves the current tokens in the token manager to the driver.
      */
     public void save() {
-        Json json = Json.empty();
-        this.values().forEach(token -> json.set("$new", token.serialize()));
-        json.save(saveFile);
+        driver.save(this.values());
     }
 
     /**

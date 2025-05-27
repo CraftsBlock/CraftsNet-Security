@@ -3,6 +3,7 @@ package de.craftsblock.cnet.modules.security;
 import de.craftsblock.cnet.modules.security.auth.AuthChainManager;
 import de.craftsblock.cnet.modules.security.auth.chains.SimpleAuthChain;
 import de.craftsblock.cnet.modules.security.auth.token.TokenManager;
+import de.craftsblock.cnet.modules.security.auth.token.driver.storage.FileTokenStorageDriver;
 import de.craftsblock.cnet.modules.security.ratelimit.RateLimitManager;
 import de.craftsblock.craftsnet.addon.Addon;
 import de.craftsblock.craftsnet.addon.meta.annotations.Meta;
@@ -32,6 +33,9 @@ public class AddonEntrypoint extends Addon {
         CNetSecurity.register(new AuthChainManager());
         CNetSecurity.register(new TokenManager());
         CNetSecurity.register(new RateLimitManager());
+
+        // Setting up the standard token driver
+        TokenManager.setDriver(new FileTokenStorageDriver());
 
         // Create a new default auth chain
         AuthChainManager chains = CNetSecurity.getAuthChainManager();

@@ -8,6 +8,7 @@ import de.craftsblock.craftscore.json.JsonParser;
 import de.craftsblock.craftscore.utils.id.Snowflake;
 import de.craftsblock.craftsnet.api.http.HttpMethod;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -25,7 +26,7 @@ import java.util.List;
  *
  * @author Philipp Maywald
  * @author CraftsBlock
- * @version 1.0.0
+ * @version 1.0.1
  * @see Json
  * @see TokenStorageDriver
  * @since 1.0.0-SNAPSHOT
@@ -48,6 +49,14 @@ public class FileTokenStorageDriver extends TokenStorageDriver {
      * @param saveFile The path to the file where tokens will be stored.
      */
     public FileTokenStorageDriver(Path saveFile) {
+        if (!Files.exists(saveFile)) {
+            try {
+                Files.createFile(saveFile);
+            } catch (IOException e) {
+                throw new RuntimeException("Could not create save file at %s!".formatted(saveFile.toAbsolutePath().toString()), e);
+            }
+        }
+
         if (!Files.isRegularFile(saveFile) && !Files.isSymbolicLink(saveFile))
             throw new IllegalArgumentException("");
 

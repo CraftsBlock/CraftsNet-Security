@@ -32,7 +32,7 @@ public abstract class TokenStorageDriver {
     /**
      * Deletes the specified token from the storage.
      * <p>
-     * This is a convenience method that delegates to {@link #delete(long)} using the tokens ID.
+     * This is a convenience method that delegates to {@link #delete(long)} using the tokens id.
      * </p>
      *
      * @param token The {@link Token} instance to be deleted.
@@ -42,7 +42,7 @@ public abstract class TokenStorageDriver {
     }
 
     /**
-     * Deletes a token identified by its unique ID.
+     * Deletes a token identified by its unique id.
      *
      * @param id the unique identifier of the token to delete.
      */

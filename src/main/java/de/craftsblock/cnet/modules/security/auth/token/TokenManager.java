@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
 /**
  * Manages a collection of authentication tokens, providing functionality to register, unregister, save,
@@ -29,30 +30,95 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author Philipp Maywald
  * @author CraftsBlock
- * @version 1.3.0
+ * @version 1.3.1
  * @since 1.0.0-SNAPSHOT
  */
 public final class TokenManager extends ConcurrentHashMap<Long, Token> implements Manager {
 
-    private static TokenStorageDriver driver;
+    private static TokenStorageDriver DRIVER;
 
+    private static String TOKEN_PREFIX = "cnet_";
+    private static String TOKEN_PREFIX_DELIMITER = "_";
+
+    /**
+     * Sets the storage driver to be used for persisting tokens and loads all tokens from it.
+     * <p>
+     * Existing tokens in the manager will be cleared and replaced with the loaded ones.
+     * </p>
+     *
+     * @param driver The {@link TokenStorageDriver} to be set and used for token persistence.
+     */
     @Experimental
     @ApiStatus.Experimental
-    public static void setDriver(TokenStorageDriver driver) {
-        TokenManager.driver = driver;
-    }
+    public static void setDriver(@NotNull TokenStorageDriver driver) {
+        TokenManager.DRIVER = driver;
 
-    @Experimental
-    @ApiStatus.Experimental
-    public static TokenStorageDriver getDriver() {
-        return driver;
+        TokenManager manager = CNetSecurity.getTokenManager();
+        if (manager == null) return;
+
+        manager.clear();
+        driver.loadAll().forEach(token -> manager.put(token.id(), token));
     }
 
     /**
-     * Constructs a new {@link TokenManager} and loads all tokens from the drive.
+     * Retrieves the currently set {@link TokenStorageDriver} used for token persistence.
+     *
+     * @return The current {@link TokenStorageDriver}, or {@code null} if none is set.
      */
-    public TokenManager() {
-        driver.loadAll().forEach(token -> this.put(token.id(), token));
+    @Experimental
+    @ApiStatus.Experimental
+    public static @Nullable TokenStorageDriver getDriver() {
+        return DRIVER;
+    }
+
+    /**
+     * Sets the prefix used when generating token strings.
+     *
+     * @param tokenPrefix The prefix string to be used for tokens.
+     */
+    @Experimental
+    @ApiStatus.Experimental
+    public static void setTokenPrefix(String tokenPrefix) {
+        TOKEN_PREFIX = tokenPrefix.replaceAll(TOKEN_PREFIX_DELIMITER + "+", TOKEN_PREFIX_DELIMITER).trim();
+
+        if (TOKEN_PREFIX.endsWith(TOKEN_PREFIX_DELIMITER)) return;
+        TOKEN_PREFIX += TOKEN_PREFIX_DELIMITER;
+    }
+
+    /**
+     * Retrieves the currently configured token prefix.
+     *
+     * @return The token prefix as a string.
+     */
+    @Experimental
+    @ApiStatus.Experimental
+    public static String getTokenPrefix() {
+        return TOKEN_PREFIX;
+    }
+
+    /**
+     * Sets the delimiter used to split token components.
+     * <p>
+     * The delimiter will be quoted to ensure it is used correctly in regular expressions.
+     * </p>
+     *
+     * @param tokenPrefixDelimiter The delimiter to be used in token formatting.
+     */
+    @Experimental
+    @ApiStatus.Experimental
+    public static void setTokenPrefixDelimiter(String tokenPrefixDelimiter) {
+        TOKEN_PREFIX_DELIMITER = Pattern.quote(tokenPrefixDelimiter);
+    }
+
+    /**
+     * Retrieves the currently configured token prefix delimiter.
+     *
+     * @return The token prefix delimiter as a string.
+     */
+    @Experimental
+    @ApiStatus.Experimental
+    public static String getTokenPrefixDelimiter() {
+        return TOKEN_PREFIX_DELIMITER;
     }
 
     /**
@@ -95,14 +161,14 @@ public final class TokenManager extends ConcurrentHashMap<Long, Token> implement
         }
 
         this.remove(token.id());
-        driver.delete(token);
+        DRIVER.delete(token);
     }
 
     /**
      * Saves the current tokens in the token manager to the driver.
      */
     public void save() {
-        driver.save(this.values());
+        DRIVER.save(this.values());
     }
 
     /**
@@ -149,7 +215,7 @@ public final class TokenManager extends ConcurrentHashMap<Long, Token> implement
      */
     public byte[] generatePlainToken(long id, byte[] secret) {
         try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
-            stream.write("cnet_".getBytes(StandardCharsets.UTF_8));
+            stream.write(TOKEN_PREFIX.getBytes(StandardCharsets.UTF_8));
             stream.write(Long.toHexString(id).getBytes(StandardCharsets.UTF_8));
             stream.write(secret);
 
@@ -181,7 +247,7 @@ public final class TokenManager extends ConcurrentHashMap<Long, Token> implement
      */
     public @Nullable Token getToken(@NotNull String token) {
         // Split the token into parts
-        String[] parts = token.split("_");
+        String[] parts = token.split(TOKEN_PREFIX_DELIMITER);
         if (parts.length == 0) return null;
 
         String part = parts.length >= 2 ? parts[1] : parts[0];
@@ -210,8 +276,10 @@ public final class TokenManager extends ConcurrentHashMap<Long, Token> implement
         Token realToken = getToken(token);
         if (realToken == null) return null;
 
-        String[] parts = token.split("_");
+        String[] parts = token.split(TOKEN_PREFIX_DELIMITER);
         if (parts.length < 2 || parts[1].length() < 16) return null;
+
+        if (!TOKEN_PREFIX.equalsIgnoreCase(parts[0])) return null;
 
         String secret = parts[1].substring(16);
         return isTokenValid(url, domain, method, secret, realToken) ? realToken : null;

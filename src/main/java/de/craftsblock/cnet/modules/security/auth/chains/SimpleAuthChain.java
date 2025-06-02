@@ -159,7 +159,7 @@ public class SimpleAuthChain extends AuthChain {
         for (HttpMethod method : methods)
             switch (method) {
                 case ALL, ALL_RAW -> {
-                    List<HttpMethod> subMethods = Arrays.stream(method.getMethods()).map(HttpMethod::parse).toList();
+                    List<HttpMethod> subMethods = Arrays.stream(method.getMethods()).toList();
                     realMethods.addAll(subMethods);
                 }
                 default -> realMethods.add(method);

@@ -7,6 +7,7 @@ import de.craftsblock.cnet.modules.security.ratelimit.RateLimitManager;
 import de.craftsblock.craftscore.event.Event;
 import de.craftsblock.craftsnet.logging.Logger;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author Philipp Maywald
  * @author CraftsBlock
- * @version 1.0.0
+ * @version 1.0.1
  * @since 1.0.0-SNAPSHOT
  */
 public class CNetSecurity {
@@ -56,17 +57,15 @@ public class CNetSecurity {
 
     /**
      * Retrieves a registered manager instance by its class type.
-     * If the requested manager has not been registered, an {@link IllegalStateException} is thrown.
+     * If the requested manager has not been registered, {@code null} is returned.
      *
      * @param <T>  The type of the instance.
      * @param type class type of the instance to be retrieved.
      * @return The manager instance, if found.
-     * @throws IllegalStateException If the manager instance is not registered.
      */
     @ApiStatus.Internal
-    protected static <T> T get(Class<T> type) {
-        if (!instances.containsKey(AuthChainManager.class))
-            throw new IllegalStateException("There is no instance of " + type.getSimpleName() + " registered!");
+    protected static <T> @Nullable T get(Class<T> type) {
+        if (!instances.containsKey(type)) return null;
         return type.cast(instances.get(type));
     }
 

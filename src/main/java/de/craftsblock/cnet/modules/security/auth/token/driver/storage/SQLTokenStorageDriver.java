@@ -20,7 +20,7 @@ import java.util.*;
  *
  * @author Philipp Maywald
  * @author CraftsBlock
- * @version 1.0.0
+ * @version 1.0.1
  * @see SQL
  * @see TokenStorageDriver
  * @since 1.0.0-SNAPSHOT
@@ -93,7 +93,7 @@ public class SQLTokenStorageDriver extends TokenStorageDriver {
                 statement.setLong(1, permission.id());
                 statement.setString(2, permission.path());
                 statement.setString(3, permission.domain());
-                statement.setString(4, HttpMethod.asString(permission.methods()));
+                statement.setString(4, HttpMethod.join(permission.methods()));
 
                 statement.executeUpdate();
 
@@ -109,10 +109,12 @@ public class SQLTokenStorageDriver extends TokenStorageDriver {
 
         permissionIDs.forEach(id -> {
             try (PreparedStatement statement = this.sql.prepareStatement(
-                    "INSERT INTO `cnet_security_token_permissions` (`token`, `permission`) VALUES (?,?);"
+                    "INSERT IGNORE INTO `cnet_security_token_permissions` (`token`, `permission`) VALUES (?,?);"
             )) {
                 statement.setLong(1, token.id());
                 statement.setLong(2, id);
+
+                this.sql.update(statement);
             } catch (SQLException e) {
                 throw new RuntimeException("Could not link token permission %s with token %s!".formatted(id, token.id()), e);
             }
@@ -129,6 +131,15 @@ public class SQLTokenStorageDriver extends TokenStorageDriver {
      */
     @Override
     public void delete(long id) {
+        try (PreparedStatement statement = this.sql.prepareStatement(
+                "DELETE FROM `cnet_security_token_permissions` WHERE `cnet_security_token_permissions`.`token`=?;"
+        )) {
+            statement.setLong(1, id);
+            this.sql.update(statement);
+        } catch (SQLException e) {
+            throw new RuntimeException("Could not delete token permissions for token %s from the database!".formatted(id), e);
+        }
+
         try (PreparedStatement statement = this.sql.prepareStatement(
                 "DELETE FROM `cnet_security_tokens` WHERE `cnet_security_tokens`.`id`=?;"
         )) {
@@ -221,7 +232,8 @@ public class SQLTokenStorageDriver extends TokenStorageDriver {
                 	`http_methods` VARCHAR(128) NOT NULL ,
                 	`created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ,
                 	`updated_at` TIMESTAMP on update CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ,
-                	PRIMARY KEY (`id`)
+                	PRIMARY KEY (`id`) ,
+                	UNIQUE KEY `unique_permission` (`path`, `domain`, `http_methods`)
                 );
                 """);
 
@@ -251,25 +263,21 @@ public class SQLTokenStorageDriver extends TokenStorageDriver {
                 """);
 
         this.sqlCreate("trigger cnet_security_cleanup_unused_permissions", """
-                DELIMITER $$
-                \s
                 CREATE OR REPLACE TRIGGER `cnet_security_cleanup_unused_permissions`
                 AFTER DELETE ON `cnet_security_token_permissions`
                 FOR EACH ROW
                 BEGIN
                     DECLARE remaining INT;
-                \s
+                    \s
                     SELECT COUNT(*) INTO remaining
                     FROM `cnet_security_token_permissions`
                     WHERE `cnet_security_token_permissions`.`permission` = OLD.`permission`;
-                \s
+                    \s
                     IF remaining = 0 THEN
                         DELETE FROM `cnet_security_permissions`
                         WHERE `cnet_security_permissions`.`id` = OLD.`permission`;
                     END IF;
-                END$$
-                \s
-                DELIMITER ;
+                END;
                 """);
     }
 

@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
  *
  * @author Philipp Maywald
  * @author CraftsBlock
- * @version 1.3.1
+ * @version 1.3.2
  * @since 1.0.0-SNAPSHOT
  */
 public final class TokenManager extends ConcurrentHashMap<Long, Token> implements Manager {
@@ -279,7 +279,7 @@ public final class TokenManager extends ConcurrentHashMap<Long, Token> implement
         String[] parts = token.split(TOKEN_PREFIX_DELIMITER);
         if (parts.length < 2 || parts[1].length() < 16) return null;
 
-        if (!TOKEN_PREFIX.equalsIgnoreCase(parts[0])) return null;
+        if (!TOKEN_PREFIX.equalsIgnoreCase(parts[0] + TOKEN_PREFIX_DELIMITER)) return null;
 
         String secret = parts[1].substring(16);
         return isTokenValid(url, domain, method, secret, realToken) ? realToken : null;

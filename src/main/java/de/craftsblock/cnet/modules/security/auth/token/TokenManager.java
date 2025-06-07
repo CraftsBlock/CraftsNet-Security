@@ -5,7 +5,6 @@ import de.craftsblock.cnet.modules.security.auth.token.driver.storage.TokenStora
 import de.craftsblock.cnet.modules.security.events.auth.token.TokenCreateEvent;
 import de.craftsblock.cnet.modules.security.events.auth.token.TokenRevokeEvent;
 import de.craftsblock.cnet.modules.security.utils.Manager;
-import de.craftsblock.craftscore.annotations.Experimental;
 import de.craftsblock.craftsnet.api.http.HttpMethod;
 import de.craftsblock.craftsnet.utils.PassphraseUtils;
 import org.jetbrains.annotations.ApiStatus;
@@ -30,7 +29,7 @@ import java.util.regex.Pattern;
  *
  * @author Philipp Maywald
  * @author CraftsBlock
- * @version 1.3.2
+ * @version 1.3.3
  * @since 1.0.0-SNAPSHOT
  */
 public final class TokenManager extends ConcurrentHashMap<Long, Token> implements Manager {
@@ -48,7 +47,6 @@ public final class TokenManager extends ConcurrentHashMap<Long, Token> implement
      *
      * @param driver The {@link TokenStorageDriver} to be set and used for token persistence.
      */
-    @Experimental
     @ApiStatus.Experimental
     public static void setDriver(@NotNull TokenStorageDriver driver) {
         TokenManager.DRIVER = driver;
@@ -65,7 +63,6 @@ public final class TokenManager extends ConcurrentHashMap<Long, Token> implement
      *
      * @return The current {@link TokenStorageDriver}, or {@code null} if none is set.
      */
-    @Experimental
     @ApiStatus.Experimental
     public static @Nullable TokenStorageDriver getDriver() {
         return DRIVER;
@@ -76,7 +73,6 @@ public final class TokenManager extends ConcurrentHashMap<Long, Token> implement
      *
      * @param tokenPrefix The prefix string to be used for tokens.
      */
-    @Experimental
     @ApiStatus.Experimental
     public static void setTokenPrefix(String tokenPrefix) {
         TOKEN_PREFIX = tokenPrefix.replaceAll(TOKEN_PREFIX_DELIMITER + "+", TOKEN_PREFIX_DELIMITER).trim();
@@ -90,7 +86,6 @@ public final class TokenManager extends ConcurrentHashMap<Long, Token> implement
      *
      * @return The token prefix as a string.
      */
-    @Experimental
     @ApiStatus.Experimental
     public static String getTokenPrefix() {
         return TOKEN_PREFIX;
@@ -104,7 +99,6 @@ public final class TokenManager extends ConcurrentHashMap<Long, Token> implement
      *
      * @param tokenPrefixDelimiter The delimiter to be used in token formatting.
      */
-    @Experimental
     @ApiStatus.Experimental
     public static void setTokenPrefixDelimiter(String tokenPrefixDelimiter) {
         TOKEN_PREFIX_DELIMITER = Pattern.quote(tokenPrefixDelimiter);
@@ -115,7 +109,6 @@ public final class TokenManager extends ConcurrentHashMap<Long, Token> implement
      *
      * @return The token prefix delimiter as a string.
      */
-    @Experimental
     @ApiStatus.Experimental
     public static String getTokenPrefixDelimiter() {
         return TOKEN_PREFIX_DELIMITER;
@@ -250,7 +243,7 @@ public final class TokenManager extends ConcurrentHashMap<Long, Token> implement
         String[] parts = token.split(TOKEN_PREFIX_DELIMITER);
         if (parts.length == 0) return null;
 
-        String part = parts.length >= 2 ? parts[1] : parts[0];
+        String part = parts[parts.length - 1];
         if (part.length() < 16) return null;
 
         try {

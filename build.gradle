@@ -22,8 +22,11 @@ repositories {
 dependencies {
     // CraftsBlock dependencies ----------------------------------------------------------------------------------------
 
-    implementation "de.craftsblock:craftscore:3.8.3-SNAPSHOT"
-    implementation "de.craftsblock:craftsnet:3.4.3-pre2"
+    // https://repo.craftsblock.de/#/releases/de/craftsblock/craftscore/sql
+    implementation "de.craftsblock.craftscore:sql:3.8.6"
+
+    // https://repo.craftsblock.de/#/releases/de/craftsblock/craftsnet
+    implementation "de.craftsblock:craftsnet:3.4.3-pre3"
 
     // Third party dependencies ----------------------------------------------------------------------------------------
 

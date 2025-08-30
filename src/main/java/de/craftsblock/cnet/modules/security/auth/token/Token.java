@@ -3,6 +3,7 @@ package de.craftsblock.cnet.modules.security.auth.token;
 import de.craftsblock.cnet.modules.security.utils.Entity;
 import de.craftsblock.craftscore.json.Json;
 import de.craftsblock.craftscore.utils.id.Snowflake;
+import org.jetbrains.annotations.ApiStatus;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import java.util.ArrayList;
@@ -18,7 +19,7 @@ import java.util.List;
  * @param permissions a list of {@link TokenPermission}, defining access control rules for the token.
  * @author Philipp Maywald
  * @author CraftsBlock
- * @version 1.0.2
+ * @version 1.0.3
  * @since 1.0.0-SNAPSHOT
  */
 public record Token(long id, String hash, List<TokenPermission> permissions) implements Entity {
@@ -28,8 +29,21 @@ public record Token(long id, String hash, List<TokenPermission> permissions) imp
      *
      * @param secret the secret to be validated.
      * @return {@code true} if the secret matches the hash, {@code false} otherwise.
+     * @deprecated Use {@link #validate(String)} instead!
      */
+    @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
+    @Deprecated(since = "1.0.0-pre10", forRemoval = true)
     public boolean valid(String secret) {
+        return this.validate(secret);
+    }
+
+    /**
+     * Validates if the given secret matches the hashed secret stored in the token.
+     *
+     * @param secret the secret to be validated.
+     * @return {@code true} if the secret matches the hash, {@code false} otherwise.
+     */
+    public boolean validate(String secret) {
         return BCrypt.checkpw(secret, hash());
     }
 

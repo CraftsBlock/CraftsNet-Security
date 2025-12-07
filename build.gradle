@@ -1,5 +1,11 @@
 plugins {
     id 'java'
+    id 'maven-publish'
+}
+
+def env = new Properties()
+file(".env").withInputStream {
+    env.load(it)
 }
 
 java {
@@ -11,7 +17,7 @@ java {
 }
 
 group = 'de.craftsblock.craftsnet.modules'
-version = '1.0.0-pre7'
+version = '1.0.0-pre10'
 
 repositories {
     mavenCentral()
@@ -22,22 +28,31 @@ repositories {
 dependencies {
     // CraftsBlock dependencies ----------------------------------------------------------------------------------------
 
+    // https://repo.craftsblock.de/#/releases/de/craftsblock/craftscore/bom
+    implementation platform("de.craftsblock.craftscore:bom:3.8.12")
+
+    // https://repo.craftsblock.de/#/releases/de/craftsblock/craftscore/event
+    implementation "de.craftsblock.craftscore:event"
+
+    // https://repo.craftsblock.de/#/releases/de/craftsblock/craftscore/json
+    implementation "de.craftsblock.craftscore:json"
+
     // https://repo.craftsblock.de/#/releases/de/craftsblock/craftscore/sql
-    implementation "de.craftsblock.craftscore:sql:3.8.6"
+    implementation "de.craftsblock.craftscore:sql"
+
+    // https://repo.craftsblock.de/#/releases/de/craftsblock/craftscore/utils
+    implementation "de.craftsblock.craftscore:utils"
 
     // https://repo.craftsblock.de/#/releases/de/craftsblock/craftsnet
-    implementation "de.craftsblock:craftsnet:3.4.3-pre3"
+    implementation "de.craftsblock:craftsnet:3.5.6-pre6"
 
     // Third party dependencies ----------------------------------------------------------------------------------------
 
-    // https://mvnrepository.com/artifact/com.google.code.gson/gson
-    implementation 'com.google.code.gson:gson:2.11.0'
-
     // https://mvnrepository.com/artifact/org.springframework.security/spring-security-crypto
-    implementation 'org.springframework.security:spring-security-crypto:6.4.4'
+    implementation 'org.springframework.security:spring-security-crypto:6.5.0'
 
     // https://mvnrepository.com/artifact/org.jetbrains/annotations
-    implementation 'org.jetbrains:annotations:26.0.1'
+    implementation 'org.jetbrains:annotations:26.0.2'
 
 }
 
@@ -58,3 +73,45 @@ jar {
     }
 }
 
+publishing {
+    publications {
+        normal(MavenPublication) {
+            artifactId "security"
+            from components.java
+            pom {
+                name = 'Security'
+                description = 'Protect your CraftsNet Restful API with an token-based access control system'
+
+                scm {
+                    url = 'https://github.com/CraftsBlock/CraftsNet-Security'
+                    connection = 'scm:git:git://github.com/CraftsBlock/CraftsNet-Security.git'
+                    developerConnection = 'scm:git:git@github.com:CraftsBlock/CraftsNet-Security.git'
+                }
+
+                issueManagement {
+                    system = 'github'
+                    url = 'https://github.com/CraftsBlock/CraftsNet-Security/issues'
+                }
+
+                licenses {
+                    license {
+                        name = 'GNU General Public License v3.0'
+                        url = 'https://github.com/CraftsBlock/CraftsNet-Security/blob/master/LICENSE'
+                    }
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            url('https://repo.craftsblock.de/experimental')
+            authentication {
+                basic(BasicAuthentication)
+            }
+            credentials {
+                username = env["username"]
+                password = env["password"]
+            }
+        }
+    }
+}

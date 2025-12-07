@@ -6,8 +6,12 @@
     "CraftsBlock"
   ],
   "website": "https://craftsblock.de",
-  "version": "1.0.0-pre7",
+  "version": "1.0.0-pre10",
+  "repositories": [
+    "https://repo.craftsblock.de/releases"
+  ],
   "dependencies": [
-    "org.springframework.security:spring-security-crypto:6.4.4"
+    "de.craftsblock.craftscore:sql:3.8.7",
+    "org.springframework.security:spring-security-crypto:6.5.0"
   ]
 }

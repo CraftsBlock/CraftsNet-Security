@@ -1,11 +1,7 @@
 plugins {
     id 'java'
     id 'maven-publish'
-}
-
-def env = new Properties()
-file(".env").withInputStream {
-    env.load(it)
+    id "de.craftsblock.gradle.publish" version "0.0.20"
 }
 
 java {
@@ -73,44 +69,31 @@ jar {
     }
 }
 
-publishing {
-    publications {
-        normal(MavenPublication) {
-            artifactId "security"
-            from components.java
-            pom {
-                name = 'Security'
-                description = 'Protect your CraftsNet Restful API with an token-based access control system'
+craftsPublish {
+    artifactId = "security"
+    name = "CraftsNet"
 
-                scm {
-                    url = 'https://github.com/CraftsBlock/CraftsNet-Security'
-                    connection = 'scm:git:git://github.com/CraftsBlock/CraftsNet-Security.git'
-                    developerConnection = 'scm:git:git@github.com:CraftsBlock/CraftsNet-Security.git'
-                }
+    component = project.components.java
 
-                issueManagement {
-                    system = 'github'
-                    url = 'https://github.com/CraftsBlock/CraftsNet-Security/issues'
-                }
+    pom {
+        name = "Security"
+        description = "Protect your CraftsNet API with easy drop in security features."
 
-                licenses {
-                    license {
-                        name = 'GNU General Public License v3.0'
-                        url = 'https://github.com/CraftsBlock/CraftsNet-Security/blob/master/LICENSE'
-                    }
-                }
-            }
+        scm {
+            url = 'https://github.com/CraftsBlock/CraftsNet-Security'
+            connection = 'scm:git:git://github.com/CraftsBlock/CraftsNet-Security.git'
+            developerConnection = 'scm:git:git@github.com:CraftsBlock/CraftsNet-Security.git'
         }
-    }
-    repositories {
-        maven {
-            url('https://repo.craftsblock.de/experimental')
-            authentication {
-                basic(BasicAuthentication)
-            }
-            credentials {
-                username = env["username"]
-                password = env["password"]
+
+        issueManagement {
+            system = 'github'
+            url = 'https://github.com/CraftsBlock/CraftsNet-Security/issues'
+        }
+
+        licenses {
+            license {
+                name = 'GNU General Public License v3.0'
+                url = 'https://github.com/CraftsBlock/CraftsNet-Security/blob/master/LICENSE'
             }
         }
     }

@@ -72,5 +72,5 @@ addons
 logs
 libraries
 
-.env
+.env.repo
 

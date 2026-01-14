@@ -1,6 +1,6 @@
 {
   "name": "CNetSecurity",
-  "main": "de.craftsblock.cnet.modules.security.AddonEntrypoint",
+  "main": "de.craftsblock.cnet.modules.security.CraftsNetSecurity",
   "authors": [
     "Philipp Maywald",
     "CraftsBlock"
@@ -11,7 +11,6 @@
     "https://repo.craftsblock.de/releases"
   ],
   "dependencies": [
-    "de.craftsblock.craftscore:sql:3.8.7",
-    "org.springframework.security:spring-security-crypto:6.5.0"
+    "org.springframework.security:spring-security-crypto:7.0.2"
   ]
 }

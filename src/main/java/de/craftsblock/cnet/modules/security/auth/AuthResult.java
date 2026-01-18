@@ -40,6 +40,10 @@ public class AuthResult {
         return reason;
     }
 
+    public Type getType() {
+        return type;
+    }
+
     public static AuthResult ok() {
         return new AuthResult(Type.OK);
     }

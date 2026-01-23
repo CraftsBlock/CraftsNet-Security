@@ -2,6 +2,7 @@ package de.craftsblock.cnet.modules.security;
 
 import de.craftsblock.cnet.modules.security.auth.AuthChain;
 import de.craftsblock.cnet.modules.security.token.TokenManager;
+import de.craftsblock.cnet.modules.security.token.adapter.HttpTokenAuthAdapter;
 import de.craftsblock.cnet.modules.security.token.adapter.WebSocketTokenAuthAdapter;
 import de.craftsblock.cnet.modules.security.token.driver.TokenStoreDriver;
 import de.craftsblock.craftsnet.CraftsNet;
@@ -31,6 +32,7 @@ public class CraftsNetSecurity extends Addon {
     @Override
     public void onLoad() {
         this.authChain = new AuthChain();
+        this.authChain.append(new HttpTokenAuthAdapter());
         this.authChain.append(new WebSocketTokenAuthAdapter());
         this.tokenManager = new TokenManager();
     }

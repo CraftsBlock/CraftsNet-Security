@@ -1,5 +1,6 @@
 package de.craftsblock.cnet.modules.security.token;
 
+import com.google.gson.JsonObject;
 import de.craftsblock.craftscore.json.Json;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.UnmodifiableView;
@@ -39,6 +40,10 @@ public record Token(long id, @NotNull String hash, @NotNull Collection<String> s
                         .mapToObj(i -> data[i])
                         .toList()
         ));
+
+        if (!json.contains("token_data_container")) {
+            json.set("token_data_container", new JsonObject());
+        }
 
         return json;
     }

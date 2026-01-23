@@ -28,7 +28,7 @@ dependencies {
     implementation platform("de.craftsblock.craftscore:bom:3.8.13-pre8")
 
     // https://repo.craftsblock.de/#/releases/de/craftsblock/craftsnet
-    implementation "de.craftsblock:craftsnet:3.7.0-pre7"
+    implementation "de.craftsblock:craftsnet:3.7.0-pre8"
 
     // Third party dependencies ----------------------------------------------------------------------------------------
 

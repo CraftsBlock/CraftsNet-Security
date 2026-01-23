@@ -17,7 +17,7 @@ sealed interface AuthListener<T> permits PreRequestListener, WebSocketConnectLis
 
     default void authenticate(BaseExchange exchange, CancellableEvent event, T subject, BiConsumer<T, AuthResult> onFailure) {
         CraftsNetSecurity addon = this.addon();
-        AuthResult result = addon.getAuthChain().authenticate(exchange);
+        AuthResult result = CraftsNetSecurity.getAuthChain().authenticate(exchange);
 
         if (!result.isFailure()) {
             addon.getListenerRegistry().call(

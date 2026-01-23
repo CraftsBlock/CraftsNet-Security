@@ -5,5 +5,5 @@ import org.jetbrains.annotations.ApiStatus;
 import java.util.List;
 
 @ApiStatus.Internal
-record ScopeResult(List<String> scopes, boolean allScopesPresent) {
+record ScopeRequest(List<String> scopes) {
 }

@@ -1,6 +1,5 @@
 package de.craftsblock.cnet.modules.security.token.scope;
 
-import de.craftsblock.cnet.modules.security.token.Token;
 import de.craftsblock.craftsnet.addon.meta.Startup;
 import de.craftsblock.craftsnet.api.RouteRegistry;
 import de.craftsblock.craftsnet.api.http.Request;
@@ -19,17 +18,12 @@ import java.util.List;
 public sealed interface ScopeRequirement
         permits ScopeRequirement.Http, ScopeRequirement.WebSocket {
 
-    default boolean handleRequire(Context context, RouteRegistry.EndpointMapping mapping) {
-        if (!context.containsKey(Token.class)) {
-            return true;
-        }
-
-        if (!mapping.isPresent(getAnnotation(), "value")) {
-            Token token = context.getTyped(Token.class);
+    default boolean injectRequest(Context context, RouteRegistry.EndpointMapping mapping) {
+        if (mapping.isPresent(getAnnotation(), "value")) {
             List<String> scopes = mapping.getRequirements(getAnnotation(), "value");
-            context.put(new ScopeResult(scopes, token.scopes().containsAll(scopes)));
+            context.put(new ScopeRequest(scopes));
         } else {
-            context.put(new ScopeResult(Collections.emptyList(), true));
+            context.put(new ScopeRequest(Collections.emptyList()));
         }
 
         return true;
@@ -47,7 +41,7 @@ public sealed interface ScopeRequirement
 
         @Override
         public boolean applies(Request request, RouteRegistry.EndpointMapping mapping) {
-            return handleRequire(request.getExchange().context(), mapping);
+            return injectRequest(request.getExchange().context(), mapping);
         }
 
     }
@@ -62,7 +56,7 @@ public sealed interface ScopeRequirement
 
         @Override
         public boolean applies(WebSocketClient webSocketClient, RouteRegistry.EndpointMapping mapping) {
-            return handleRequire(webSocketClient.getContext(), mapping);
+            return injectRequest(webSocketClient.getContext(), mapping);
         }
 
     }

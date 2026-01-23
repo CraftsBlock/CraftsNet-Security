@@ -1,6 +1,8 @@
 package de.craftsblock.cnet.modules.security;
 
 import de.craftsblock.cnet.modules.security.auth.AuthChain;
+import de.craftsblock.cnet.modules.security.token.TokenManager;
+import de.craftsblock.cnet.modules.security.token.adapter.WebSocketTokenAuthAdapter;
 import de.craftsblock.cnet.modules.security.token.driver.TokenStoreDriver;
 import de.craftsblock.craftsnet.CraftsNet;
 import de.craftsblock.craftsnet.addon.Addon;
@@ -14,6 +16,7 @@ public class CraftsNetSecurity extends Addon {
 
     private AuthChain authChain;
 
+    private TokenManager tokenManager;
     private TokenStoreDriver tokenStoreDriver;
 
     public static void main(String[] args) throws IOException {
@@ -28,6 +31,8 @@ public class CraftsNetSecurity extends Addon {
     @Override
     public void onLoad() {
         this.authChain = new AuthChain();
+        this.authChain.append(new WebSocketTokenAuthAdapter());
+        this.tokenManager = new TokenManager();
     }
 
     @Override
@@ -43,6 +48,10 @@ public class CraftsNetSecurity extends Addon {
 
     public static AuthChain getAuthChain() {
         return getInstance().authChain;
+    }
+
+    public static TokenManager getTokenManager() {
+        return getInstance().tokenManager;
     }
 
     public static void setTokenStoreDriver(TokenStoreDriver tokenStoreDriver) {

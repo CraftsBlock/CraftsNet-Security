@@ -6,10 +6,12 @@ import de.craftsblock.cnet.modules.security.token.driver.file.FileTokenStoreDriv
 import de.craftsblock.craftscore.event.EventHandler;
 import de.craftsblock.craftscore.event.EventPriority;
 import de.craftsblock.craftscore.event.ListenerAdapter;
+import de.craftsblock.craftsnet.autoregister.meta.AutoRegister;
 import de.craftsblock.craftsnet.events.addons.AllAddonsLoadedEvent;
 
 import java.nio.file.Path;
 
+@AutoRegister
 public class TokenPostSetupListener implements ListenerAdapter {
 
     @EventHandler(priority = EventPriority.HIGHEST)

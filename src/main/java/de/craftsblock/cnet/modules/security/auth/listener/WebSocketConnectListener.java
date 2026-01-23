@@ -1,14 +1,12 @@
 package de.craftsblock.cnet.modules.security.auth.listener;
 
 import de.craftsblock.cnet.modules.security.CraftsNetSecurity;
-import de.craftsblock.craftscore.buffer.BufferUtil;
 import de.craftsblock.craftscore.event.EventHandler;
 import de.craftsblock.craftscore.event.EventPriority;
 import de.craftsblock.craftscore.event.ListenerAdapter;
 import de.craftsblock.craftscore.json.Json;
 import de.craftsblock.craftsnet.CraftsNet;
 import de.craftsblock.craftsnet.addon.meta.Startup;
-import de.craftsblock.craftsnet.api.websocket.ClosureCode;
 import de.craftsblock.craftsnet.api.websocket.SocketExchange;
 import de.craftsblock.craftsnet.api.websocket.WebSocketClient;
 import de.craftsblock.craftsnet.autoregister.meta.AutoRegister;

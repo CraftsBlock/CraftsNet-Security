@@ -34,6 +34,14 @@ public class FileTokenStoreDriver implements TokenStoreDriver {
         this.tokensDirectory = tokensFile.toAbsolutePath().getParent();
 
         try {
+            if (Files.notExists(tokensDirectory)) {
+                Files.createDirectories(tokensDirectory);
+            }
+
+            if (Files.notExists(tokensFile)) {
+                Files.createFile(tokensFile);
+            }
+
             long size = Files.size(tokensFile);
             if (size >= WARN_AT_FILE_SIZE) {
                 Logger logger = CraftsNetSecurity.getInstance().getLogger();

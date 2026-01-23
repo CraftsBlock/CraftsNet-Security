@@ -22,7 +22,7 @@ public record Token(long id, @NotNull String hash, @NotNull Collection<String> s
         return scopes;
     }
 
-    public boolean validate(@NotNull String secret) {
+    public boolean validate(byte @NotNull [] secret) {
         return BCrypt.checkpw(secret, hash);
     }
 

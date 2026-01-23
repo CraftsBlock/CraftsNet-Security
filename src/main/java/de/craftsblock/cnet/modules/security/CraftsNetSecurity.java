@@ -2,12 +2,10 @@ package de.craftsblock.cnet.modules.security;
 
 import de.craftsblock.cnet.modules.security.auth.AuthChain;
 import de.craftsblock.cnet.modules.security.token.driver.TokenStoreDriver;
-import de.craftsblock.cnet.modules.security.token.driver.file.FileTokenStoreDriver;
 import de.craftsblock.craftsnet.CraftsNet;
 import de.craftsblock.craftsnet.addon.Addon;
 import de.craftsblock.craftsnet.addon.meta.annotations.Meta;
 import de.craftsblock.craftsnet.builder.ActivateType;
-import de.craftsblock.craftsnet.logging.Logger;
 
 import java.io.IOException;
 
@@ -30,7 +28,6 @@ public class CraftsNetSecurity extends Addon {
     @Override
     public void onLoad() {
         this.authChain = new AuthChain();
-        this.tokenStoreDriver = new FileTokenStoreDriver(getDataPath().resolve("tokens.json"));
     }
 
     @Override
@@ -46,6 +43,14 @@ public class CraftsNetSecurity extends Addon {
 
     public static AuthChain getAuthChain() {
         return getInstance().authChain;
+    }
+
+    public static void setTokenStoreDriver(TokenStoreDriver tokenStoreDriver) {
+        getInstance().tokenStoreDriver = tokenStoreDriver;
+    }
+
+    public static TokenStoreDriver getTokenStoreDriver() {
+        return getInstance().tokenStoreDriver;
     }
 
     public static CraftsNetSecurity getInstance() {

@@ -26,12 +26,11 @@ public class ScopeResolveMiddleware implements ListenerAdapter {
 
     private final Json MISSING_SCOPES_MESSAGE = Json.empty()
             .set("success", false)
-            .set("error.code", 403)
+            .set("error.code", 400)
             .set("error.message", "Not allowed!");
 
     private <T> void handle(BaseExchange exchange, CancellableEvent event, T subject, Consumer<T> onFailure) {
         Context context = exchange.context();
-        System.out.println(context);
         if (context == null || !context.containsKey(ScopeRequest.class)) {
             return;
         }
@@ -53,7 +52,7 @@ public class ScopeResolveMiddleware implements ListenerAdapter {
 
         event.setCancelled(true);
         if (event instanceof EventWithCancelReason withCancelReason) {
-            withCancelReason.setCancelReason("AUTH FAILED");
+            withCancelReason.setCancelReason("SCOPE MISMATCH");
         }
 
         onFailure.accept(subject);
@@ -62,7 +61,15 @@ public class ScopeResolveMiddleware implements ListenerAdapter {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreWhenCancelled = true)
     public void handleRequest(RouteRequestEvent event) {
         final Exchange exchange = event.getExchange();
-        handle(exchange, event, exchange.response(), response -> response.print(MISSING_SCOPES_MESSAGE));
+        handle(exchange, event, exchange.response(), response -> {
+            if (!response.headersSent()) {
+                response.setCode(400);
+            }
+
+            if (!response.sendingFile()) {
+                response.print(MISSING_SCOPES_MESSAGE);
+            }
+        });
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreWhenCancelled = true)

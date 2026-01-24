@@ -32,7 +32,7 @@ public class CraftsNetSecurity extends Addon {
     @Override
     public void onLoad() {
         this.authChain = new AuthChain();
-        this.authChain.append(new HttpTokenAuthAdapter());
+        this.authChain.append(new HttpTokenAuthAdapter(null));
         this.authChain.append(new WebSocketTokenAuthAdapter());
         this.tokenManager = new TokenManager();
     }

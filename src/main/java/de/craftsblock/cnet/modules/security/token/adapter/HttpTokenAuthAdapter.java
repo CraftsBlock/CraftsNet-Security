@@ -27,7 +27,8 @@ public class HttpTokenAuthAdapter implements AuthAdapter.Http {
     @Override
     public AuthResult authenticate(Exchange exchange) {
         if (authTypes == null || authTypes.isEmpty()) {
-            return AuthResult.skip();
+            CraftsNetSecurity.getInstance().getLogger().warning("No http token auth type is set up!");
+            return AuthResult.failure("Not allowed!");
         }
 
         AtomicReference<AuthResult> authResultReference = new AtomicReference<>();

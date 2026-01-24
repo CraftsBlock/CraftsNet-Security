@@ -130,10 +130,10 @@ public class FileTokenStoreDriver implements TokenStoreDriver {
     }
 
     @Override
-    public void delete(long id) {
+    public void delete(Token token) {
         ensureOpen();
         synchronized (this.tokens) {
-            this.tokens.get().remove(String.valueOf(id));
+            this.tokens.get().remove(String.valueOf(token.id()));
         }
     }
 
@@ -159,6 +159,7 @@ public class FileTokenStoreDriver implements TokenStoreDriver {
 
     @Override
     public void close() {
+        ensureOpen();
         try {
             this.watchThread.interrupt();
             this.watchThread.join();

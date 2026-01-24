@@ -4,6 +4,7 @@ import de.craftsblock.cnet.modules.security.CraftsNetSecurity;
 import de.craftsblock.cnet.modules.security.auth.AuthResult;
 import de.craftsblock.cnet.modules.security.auth.adapter.AuthAdapter;
 import de.craftsblock.cnet.modules.security.token.Token;
+import de.craftsblock.cnet.modules.security.token.event.TokenUsedEvent;
 import de.craftsblock.craftsnet.api.http.Exchange;
 import de.craftsblock.craftsnet.api.http.Request;
 import de.craftsblock.craftsnet.api.session.Session;
@@ -84,6 +85,7 @@ public class HttpTokenAuthAdapter implements AuthAdapter.Http {
             return AuthResult.failure("Not allowed! 2");
         }
 
+        CraftsNetSecurity.getInstance().getListenerRegistry().call(new TokenUsedEvent(token));
         exchange.context().put(token);
         return AuthResult.ok();
     }

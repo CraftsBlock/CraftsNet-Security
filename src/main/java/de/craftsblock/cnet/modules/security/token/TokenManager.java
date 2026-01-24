@@ -1,6 +1,7 @@
 package de.craftsblock.cnet.modules.security.token;
 
 import de.craftsblock.cnet.modules.security.CraftsNetSecurity;
+import de.craftsblock.cnet.modules.security.token.event.TokenCreateEvent;
 import de.craftsblock.cnet.modules.security.token.util.NewToken;
 import de.craftsblock.cnet.modules.security.token.util.TokenParts;
 import de.craftsblock.cnet.modules.security.token.util.TokenUtil;
@@ -63,8 +64,10 @@ public class TokenManager {
         String secretHash = BCrypt.hashpw(secret, BCrypt.gensalt());
 
         try {
+            Token token = new Token(id, secretHash, scopes, new TokenDataContainer());
+            CraftsNetSecurity.getInstance().getListenerRegistry().call(new TokenCreateEvent(token));
             return new NewToken(
-                    new Token(id, secretHash, scopes, new TokenDataContainer()),
+                    token,
                     TokenUtil.mergeTokenParts(id, secret)
             );
         } finally {

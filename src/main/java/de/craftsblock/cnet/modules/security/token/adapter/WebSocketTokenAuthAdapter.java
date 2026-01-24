@@ -5,6 +5,7 @@ import de.craftsblock.cnet.modules.security.CraftsNetSecurity;
 import de.craftsblock.cnet.modules.security.auth.AuthResult;
 import de.craftsblock.cnet.modules.security.auth.adapter.AuthAdapter;
 import de.craftsblock.cnet.modules.security.token.Token;
+import de.craftsblock.cnet.modules.security.token.event.TokenUsedEvent;
 import de.craftsblock.craftscore.event.EventHandler;
 import de.craftsblock.craftscore.event.EventPriority;
 import de.craftsblock.craftscore.event.ListenerAdapter;
@@ -63,6 +64,7 @@ public class WebSocketTokenAuthAdapter implements ListenerAdapter, AuthAdapter.W
                 return;
             }
 
+            CraftsNetSecurity.getInstance().getListenerRegistry().call(new TokenUsedEvent(token));
             context.put(token);
             context.remove(RequireAuth.class);
         } catch (JsonSyntaxException ignored) {

@@ -5,6 +5,7 @@ import de.craftsblock.cnet.modules.security.token.event.TokenCreateEvent;
 import de.craftsblock.cnet.modules.security.token.util.NewToken;
 import de.craftsblock.cnet.modules.security.token.util.TokenParts;
 import de.craftsblock.cnet.modules.security.token.util.TokenUtil;
+import de.craftsblock.craftscore.cache.Cache;
 import de.craftsblock.craftscore.utils.id.Snowflake;
 import de.craftsblock.craftsnet.utils.PassphraseUtils;
 import org.springframework.security.crypto.bcrypt.BCrypt;
@@ -14,12 +15,28 @@ import java.util.List;
 
 public class TokenManager {
 
+    private final Cache<Long, Token> tokenCache = new Cache<>(25);
+
     public void persist(Token token) {
         CraftsNetSecurity.getTokenStoreDriver().save(token);
     }
 
     public void delete(Token token) {
         CraftsNetSecurity.getTokenStoreDriver().delete(token);
+    }
+
+    public Token getToken(long id) {
+        if (tokenCache.containsKey(id)) {
+            return tokenCache.get(id);
+        }
+
+        if (!CraftsNetSecurity.getTokenStoreDriver().exists(id)) {
+            return null;
+        }
+
+        Token token = CraftsNetSecurity.getTokenStoreDriver().load(id);
+        tokenCache.put(token.id(), token);
+        return token;
     }
 
     public Token getValidatedToken(String token) {
@@ -29,11 +46,7 @@ public class TokenManager {
         }
 
         try {
-            if (!CraftsNetSecurity.getTokenStoreDriver().exists(parts.id())) {
-                return null;
-            }
-
-            Token realToken = CraftsNetSecurity.getTokenStoreDriver().load(parts.id());
+            Token realToken = getToken(parts.id());
             if (realToken == null || !realToken.validate(parts.secret())) {
                 return null;
             }

@@ -68,6 +68,8 @@ public class FileTokenStoreDriver implements TokenStoreDriver {
                             Path path = (Path) event.context();
                             Path realPath = tokensDirectory.resolve(path);
                             if (realPath.equals(tokensFile.toAbsolutePath())) {
+                                CraftsNetSecurity.getInstance().getLogger().debug("Detected file system change, " +
+                                        "reloading token file.");
                                 this.reload();
                             }
                         }
@@ -82,15 +84,11 @@ public class FileTokenStoreDriver implements TokenStoreDriver {
         }
     }
 
-    private void reload() {
+    public void reload() {
         ensureOpen();
         synchronized (this.tokens) {
-            if (this.tokens.get() != null) {
-                CraftsNetSecurity.getInstance().getLogger().debug("Detected file system change, " +
-                        "reloading token file.");
-            }
-
             this.tokens.set(JsonParser.parse(tokensFile));
+            TokenStoreDriver.super.reload();
         }
     }
 

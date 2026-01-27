@@ -9,6 +9,10 @@ import java.util.Collection;
 
 public interface TokenStoreDriver extends AutoCloseable {
 
+    default void reload() {
+        CraftsNetSecurity.getTokenManager().clearCache();
+    }
+
     boolean exists(long id);
 
     Token load(long id);

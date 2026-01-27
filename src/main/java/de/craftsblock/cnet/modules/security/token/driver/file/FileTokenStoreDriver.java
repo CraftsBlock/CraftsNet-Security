@@ -132,6 +132,7 @@ public class FileTokenStoreDriver implements TokenStoreDriver {
         ensureOpen();
         synchronized (this.tokens) {
             this.tokens.get().remove(String.valueOf(token.id()));
+            TokenStoreDriver.super.delete(token);
         }
     }
 

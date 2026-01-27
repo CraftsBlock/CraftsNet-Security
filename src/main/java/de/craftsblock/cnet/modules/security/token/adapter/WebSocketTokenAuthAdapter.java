@@ -58,7 +58,7 @@ public class WebSocketTokenAuthAdapter implements ListenerAdapter, AuthAdapter.W
                 return;
             }
 
-            Token token = CraftsNetSecurity.getTokenManager().getToken(json.getString("token"));
+            Token token = CraftsNetSecurity.getTokenManager().getValidatedToken(json.getString("token"));
             if (token == null) {
                 failAuth(client, "WRONG TOKEN");
                 return;

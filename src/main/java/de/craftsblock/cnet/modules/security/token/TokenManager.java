@@ -22,7 +22,7 @@ public class TokenManager {
         CraftsNetSecurity.getTokenStoreDriver().delete(token);
     }
 
-    public Token getToken(String token) {
+    public Token getValidatedToken(String token) {
         TokenParts parts = TokenUtil.splitToTokenParts(token);
         if (parts == null) {
             return null;
@@ -73,6 +73,10 @@ public class TokenManager {
         } finally {
             PassphraseUtils.erase(secret);
         }
+    }
+
+    public void clearCache() {
+        this.tokenCache.clear();
     }
 
 }

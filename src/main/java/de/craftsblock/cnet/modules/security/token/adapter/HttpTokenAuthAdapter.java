@@ -80,7 +80,7 @@ public class HttpTokenAuthAdapter implements AuthAdapter.Http {
             return AuthResult.skip();
         }
 
-        Token token = CraftsNetSecurity.getTokenManager().getToken(plainToken);
+        Token token = CraftsNetSecurity.getTokenManager().getValidatedToken(plainToken);
         if (token == null) {
             return AuthResult.failure("Not allowed! 2");
         }

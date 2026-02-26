@@ -15,7 +15,15 @@ import java.util.List;
 
 public class TokenManager {
 
-    private final Cache<Long, Token> tokenCache = new Cache<>(25);
+    private final Cache<Long, Token> tokenCache;
+
+    public TokenManager() {
+        this(25);
+    }
+
+    public TokenManager(int cacheSize) {
+        this.tokenCache = new Cache<>(cacheSize);
+    }
 
     public void persist(Token token) {
         CraftsNetSecurity.getTokenStoreDriver().save(token);

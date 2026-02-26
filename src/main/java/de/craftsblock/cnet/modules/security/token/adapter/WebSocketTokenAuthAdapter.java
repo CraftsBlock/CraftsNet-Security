@@ -20,7 +20,6 @@ import de.craftsblock.craftsnet.autoregister.meta.AutoRegister;
 import de.craftsblock.craftsnet.events.sockets.message.IncomingSocketMessageEvent;
 import de.craftsblock.craftsnet.events.sockets.message.OutgoingSocketMessageEvent;
 
-@AutoRegister
 public class WebSocketTokenAuthAdapter implements ListenerAdapter, AuthAdapter.WebSocket {
 
     private static final String MESSAGE_LITERAL_WRONG_AUTH = "Not allowed!";

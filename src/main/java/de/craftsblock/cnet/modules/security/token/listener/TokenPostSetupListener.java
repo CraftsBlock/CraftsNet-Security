@@ -2,6 +2,7 @@ package de.craftsblock.cnet.modules.security.token.listener;
 
 import de.craftsblock.cnet.modules.security.CraftsNetSecurity;
 import de.craftsblock.cnet.modules.security.token.driver.Driver;
+import de.craftsblock.cnet.modules.security.token.driver.file.FileGroupStoreDriver;
 import de.craftsblock.cnet.modules.security.token.driver.file.FileTokenStoreDriver;
 import de.craftsblock.craftscore.event.EventHandler;
 import de.craftsblock.craftscore.event.EventPriority;
@@ -25,6 +26,12 @@ public class TokenPostSetupListener implements ListenerAdapter {
                 CraftsNetSecurity::setTokenStoreDriver,
                 FileTokenStoreDriver::new,
                 "tokens.json"
+        );
+        registerFallbackDriver(
+                CraftsNetSecurity::getGroupStoreDriver,
+                CraftsNetSecurity::setGroupStoreDriver,
+                FileGroupStoreDriver::new,
+                "groups.json"
         );
     }
 

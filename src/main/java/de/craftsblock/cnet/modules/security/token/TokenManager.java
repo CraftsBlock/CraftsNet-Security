@@ -3,6 +3,8 @@ package de.craftsblock.cnet.modules.security.token;
 import de.craftsblock.cnet.modules.security.CraftsNetSecurity;
 import de.craftsblock.cnet.modules.security.token.driver.TokenStoreDriver;
 import de.craftsblock.cnet.modules.security.token.event.TokenCreateEvent;
+import de.craftsblock.cnet.modules.security.token.group.Group;
+import de.craftsblock.cnet.modules.security.token.group.OptionalGroup;
 import de.craftsblock.cnet.modules.security.token.util.NewToken;
 import de.craftsblock.cnet.modules.security.token.util.TokenParts;
 import de.craftsblock.cnet.modules.security.token.util.TokenUtil;
@@ -12,6 +14,7 @@ import de.craftsblock.craftsnet.utils.PassphraseUtils;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 public class TokenManager {
@@ -68,11 +71,19 @@ public class TokenManager {
     }
 
     public NewToken newPersistedToken(String... scopes) {
-        return this.newPersistedToken(List.of(scopes));
+        return this.newPersistedToken(List.of(scopes), Collections.emptyList());
     }
 
-    public NewToken newPersistedToken(Collection<String> scopes) {
-        NewToken newToken = newToken(scopes);
+    public NewToken newPersistedToken(String[] scopes, String... groups) {
+        return this.newPersistedToken(List.of(scopes), List.of(groups));
+    }
+
+    public NewToken newPersistedToken(Collection<String> scopes, String... groups) {
+        return this.newPersistedToken(scopes, List.of(groups));
+    }
+
+    public NewToken newPersistedToken(Collection<String> scopes, Collection<String> groups) {
+        NewToken newToken = newToken(scopes, groups);
         persist(newToken.token());
         return newToken;
     }
@@ -81,13 +92,22 @@ public class TokenManager {
         return this.newToken(List.of(scopes));
     }
 
-    public NewToken newToken(Collection<String> scopes) {
+    public NewToken newToken(String[] scopes, String... groups) {
+        return this.newToken(List.of(scopes), List.of(groups));
+    }
+
+    public NewToken newToken(Collection<String> scopes, String... groups) {
+        return this.newToken(scopes, List.of(groups));
+    }
+
+    public NewToken newToken(Collection<String> scopes, Collection<String> groups) {
         long id = Snowflake.generate();
         byte[] secret = TokenUtil.newSecureSecret();
         String secretHash = BCrypt.hashpw(secret, BCrypt.gensalt());
 
         try {
-            Token token = new Token(id, secretHash, scopes, new TokenDataContainer());
+            Token token = new Token(id, secretHash, scopes, OptionalGroup.fromList(groups),
+                    new TokenDataContainer());
             CraftsNetSecurity.getInstance().getListenerRegistry().call(new TokenCreateEvent(token));
             return new NewToken(
                     token,

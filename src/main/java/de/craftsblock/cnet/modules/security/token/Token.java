@@ -1,20 +1,34 @@
 package de.craftsblock.cnet.modules.security.token;
 
 import com.google.gson.JsonObject;
+import com.google.gson.internal.Streams;
+import de.craftsblock.cnet.modules.security.CraftsNetSecurity;
+import de.craftsblock.cnet.modules.security.token.driver.GroupStoreDriver;
+import de.craftsblock.cnet.modules.security.token.group.GroupManager;
+import de.craftsblock.cnet.modules.security.token.group.OptionalGroup;
 import de.craftsblock.craftscore.json.Json;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Unmodifiable;
 import org.jetbrains.annotations.UnmodifiableView;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import java.util.*;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
-public record Token(long id, @NotNull String hash, @NotNull Collection<String> scopes, @NotNull TokenDataContainer tokenDataContainer) {
+public record Token(long id, @NotNull String hash, @NotNull @UnmodifiableView Collection<String> scopes,
+                    @NotNull @UnmodifiableView Collection<OptionalGroup> groups, @NotNull TokenDataContainer tokenDataContainer) {
 
-    public Token(long id, @NotNull String hash, @NotNull Collection<String> scopes, @NotNull TokenDataContainer tokenDataContainer) {
+    public Token(long id, @NotNull String hash, @NotNull Collection<String> scopes,
+                 @NotNull Collection<OptionalGroup> groups, @NotNull TokenDataContainer tokenDataContainer) {
         this.id = id;
         this.hash = hash;
-        this.scopes = Collections.unmodifiableCollection(scopes);
+        this.groups = Collections.unmodifiableCollection(groups);
+        this.scopes = Stream.concat(
+                scopes.stream(),
+                groups.stream().filter(OptionalGroup::persisted)
+                        .flatMap(group -> group.scopes().stream())
+        ).distinct().toList();
         this.tokenDataContainer = tokenDataContainer;
     }
 
@@ -31,7 +45,8 @@ public record Token(long id, @NotNull String hash, @NotNull Collection<String> s
         Json json = Json.empty()
                 .set("id", this.id)
                 .set("hash", this.hash)
-                .set("scopes", this.scopes);
+                .set("scopes", this.scopes)
+                .set("groups", this.groups.stream().map(OptionalGroup::name).toList());
 
         Map<String, byte[]> serializedTokenDataContainer = this.tokenDataContainer.serializeToMap();
         serializedTokenDataContainer.forEach((key, data) -> json.set(
@@ -64,10 +79,12 @@ public record Token(long id, @NotNull String hash, @NotNull Collection<String> s
         });
 
         TokenDataContainer tokenDataContainer = new TokenDataContainer(serializedTokenDataContainer);
+        GroupManager groupManager = CraftsNetSecurity.getGroupManager();
         return new Token(
                 json.getLong("id"),
                 json.getString("hash"),
                 json.getStringList("scopes"),
+                OptionalGroup.fromList(json.getStringList("groups")),
                 tokenDataContainer
         );
     }

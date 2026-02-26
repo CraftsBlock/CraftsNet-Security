@@ -1,6 +1,5 @@
 package de.craftsblock.cnet.modules.security.token.util;
 
-import de.craftsblock.cnet.modules.security.token.Token;
 import de.craftsblock.craftscore.buffer.BufferUtil;
 import de.craftsblock.craftsnet.utils.PassphraseUtils;
 

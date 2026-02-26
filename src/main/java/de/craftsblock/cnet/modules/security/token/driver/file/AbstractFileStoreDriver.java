@@ -15,7 +15,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 abstract sealed class AbstractFileStoreDriver implements AutoCloseable
-        permits FileTokenStoreDriver {
+        permits FileGroupStoreDriver, FileTokenStoreDriver {
 
     public static final int WARN_AT_FILE_SIZE = 1024 * 1024 * 15;
 

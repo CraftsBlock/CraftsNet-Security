@@ -2,13 +2,12 @@ package de.craftsblock.cnet.modules.security;
 
 import de.craftsblock.cnet.modules.security.auth.AuthChain;
 import de.craftsblock.cnet.modules.security.token.TokenManager;
-import de.craftsblock.cnet.modules.security.token.adapter.HttpTokenAuthAdapter;
-import de.craftsblock.cnet.modules.security.token.adapter.WebSocketTokenAuthAdapter;
 import de.craftsblock.cnet.modules.security.token.driver.TokenStoreDriver;
 import de.craftsblock.craftsnet.CraftsNet;
 import de.craftsblock.craftsnet.addon.Addon;
 import de.craftsblock.craftsnet.addon.meta.annotations.Meta;
 import de.craftsblock.craftsnet.builder.ActivateType;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 
@@ -32,8 +31,6 @@ public class CraftsNetSecurity extends Addon {
     @Override
     public void onLoad() {
         this.authChain = new AuthChain();
-        this.authChain.append(new HttpTokenAuthAdapter(null));
-        this.authChain.append(new WebSocketTokenAuthAdapter());
         this.tokenManager = new TokenManager();
     }
 
@@ -48,19 +45,23 @@ public class CraftsNetSecurity extends Addon {
         this.tokenStoreDriver.close();
     }
 
-    public static AuthChain getAuthChain() {
+    public static @NotNull AuthChain getAuthChain() {
         return getInstance().authChain;
     }
 
-    public static TokenManager getTokenManager() {
+    public synchronized static void setTokenManager(@NotNull TokenManager tokenManager) {
+        getInstance().tokenManager = tokenManager;
+    }
+
+    public synchronized static @NotNull TokenManager getTokenManager() {
         return getInstance().tokenManager;
     }
 
-    public static void setTokenStoreDriver(TokenStoreDriver tokenStoreDriver) {
+    public synchronized static void setTokenStoreDriver(@NotNull TokenStoreDriver tokenStoreDriver) {
         getInstance().tokenStoreDriver = tokenStoreDriver;
     }
 
-    public static TokenStoreDriver getTokenStoreDriver() {
+    public synchronized static TokenStoreDriver getTokenStoreDriver() {
         return getInstance().tokenStoreDriver;
     }
 

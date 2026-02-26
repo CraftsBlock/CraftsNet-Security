@@ -1,13 +1,11 @@
 package de.craftsblock.cnet.modules.security.token.scope;
 
-import de.craftsblock.craftsnet.addon.meta.Startup;
 import de.craftsblock.craftsnet.api.RouteRegistry;
 import de.craftsblock.craftsnet.api.http.Request;
 import de.craftsblock.craftsnet.api.requirements.web.WebRequirement;
 import de.craftsblock.craftsnet.api.requirements.websocket.WebSocketRequirement;
 import de.craftsblock.craftsnet.api.utils.Context;
 import de.craftsblock.craftsnet.api.websocket.WebSocketClient;
-import de.craftsblock.craftsnet.autoregister.meta.AutoRegister;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.lang.annotation.Annotation;
@@ -32,7 +30,6 @@ public sealed interface ScopeRequirement
     Class<? extends Annotation> getAnnotation();
 
     @ApiStatus.Internal
-    @AutoRegister(startup = Startup.LOAD)
     final class Http extends WebRequirement implements ScopeRequirement {
 
         public Http() {
@@ -47,7 +44,6 @@ public sealed interface ScopeRequirement
     }
 
     @ApiStatus.Internal
-    @AutoRegister(startup = Startup.LOAD)
     final class WebSocket extends WebSocketRequirement<WebSocketClient> implements ScopeRequirement {
 
         public WebSocket() {

@@ -7,8 +7,9 @@ import de.craftsblock.cnet.modules.security.token.event.TokenPersistEvent;
 
 import java.util.Collection;
 
-public interface TokenStoreDriver extends AutoCloseable {
+public non-sealed interface TokenStoreDriver extends AutoCloseable, Driver {
 
+    @Override
     default void reload() {
         CraftsNetSecurity.getTokenManager().clearCache();
     }

@@ -6,13 +6,11 @@ import de.craftsblock.craftscore.event.EventHandler;
 import de.craftsblock.craftscore.event.EventPriority;
 import de.craftsblock.craftscore.event.ListenerAdapter;
 import de.craftsblock.craftscore.json.Json;
-import de.craftsblock.craftsnet.addon.meta.Startup;
 import de.craftsblock.craftsnet.api.BaseExchange;
 import de.craftsblock.craftsnet.api.http.Exchange;
 import de.craftsblock.craftsnet.api.utils.Context;
 import de.craftsblock.craftsnet.api.websocket.ClosureCode;
 import de.craftsblock.craftsnet.api.websocket.SocketExchange;
-import de.craftsblock.craftsnet.autoregister.meta.AutoRegister;
 import de.craftsblock.craftsnet.events.EventWithCancelReason;
 import de.craftsblock.craftsnet.events.requests.routes.RouteRequestEvent;
 import de.craftsblock.craftsnet.events.sockets.message.IncomingSocketMessageEvent;
@@ -21,7 +19,6 @@ import org.jetbrains.annotations.ApiStatus;
 import java.util.function.Consumer;
 
 @ApiStatus.Internal
-@AutoRegister(startup = Startup.LOAD)
 public class ScopeResolveMiddleware implements ListenerAdapter {
 
     private final Json MISSING_SCOPES_MESSAGE = Json.empty()
@@ -41,6 +38,7 @@ public class ScopeResolveMiddleware implements ListenerAdapter {
                 withCancelReason.setCancelReason("NO TOKEN");
             }
 
+            onFailure.accept(subject);
             return;
         }
 

@@ -1,6 +1,7 @@
 package de.craftsblock.cnet.modules.security.token;
 
 import de.craftsblock.cnet.modules.security.CraftsNetSecurity;
+import de.craftsblock.cnet.modules.security.token.driver.TokenStoreDriver;
 import de.craftsblock.cnet.modules.security.token.event.TokenCreateEvent;
 import de.craftsblock.cnet.modules.security.token.util.NewToken;
 import de.craftsblock.cnet.modules.security.token.util.TokenParts;
@@ -38,11 +39,12 @@ public class TokenManager {
             return tokenCache.get(id);
         }
 
-        if (!CraftsNetSecurity.getTokenStoreDriver().exists(id)) {
+        TokenStoreDriver driver = CraftsNetSecurity.getTokenStoreDriver();
+        if (!driver.exists(id)) {
             return null;
         }
 
-        Token token = CraftsNetSecurity.getTokenStoreDriver().load(id);
+        Token token = driver.load(id);
         tokenCache.put(token.id(), token);
         return token;
     }

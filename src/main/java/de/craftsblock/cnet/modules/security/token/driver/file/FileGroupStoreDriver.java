@@ -9,7 +9,7 @@ import java.util.Collection;
 
 public final class FileGroupStoreDriver extends AbstractFileStoreDriver implements GroupStoreDriver {
 
-    public FileGroupStoreDriver(Path file) {
+    FileGroupStoreDriver(Path file) {
         super(file);
     }
 
@@ -20,14 +20,14 @@ public final class FileGroupStoreDriver extends AbstractFileStoreDriver implemen
     }
 
     @Override
-    public boolean exists(String name) {
+    public boolean existsGroup(String name) {
         return this.json(json -> {
             return json.contains(name);
         });
     }
 
     @Override
-    public Group load(String name) {
+    public Group loadGroup(String name) {
         Json group = this.json(json -> {
             return json.getJson(name);
         });
@@ -40,7 +40,7 @@ public final class FileGroupStoreDriver extends AbstractFileStoreDriver implemen
     }
 
     @Override
-    public void save(Group group) {
+    public void saveGroup(Group group) {
         this.json(json -> {
             json.set(group.name(), group.toJson());
             json.save(file);
@@ -48,7 +48,7 @@ public final class FileGroupStoreDriver extends AbstractFileStoreDriver implemen
     }
 
     @Override
-    public void delete(Group group) {
+    public void deleteGroup(Group group) {
         this.json(json -> {
             json.remove(group.name());
             json.save(file);

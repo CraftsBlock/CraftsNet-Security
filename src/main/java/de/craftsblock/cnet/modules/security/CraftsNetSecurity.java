@@ -2,8 +2,7 @@ package de.craftsblock.cnet.modules.security;
 
 import de.craftsblock.cnet.modules.security.auth.AuthChain;
 import de.craftsblock.cnet.modules.security.token.TokenManager;
-import de.craftsblock.cnet.modules.security.token.driver.GroupStoreDriver;
-import de.craftsblock.cnet.modules.security.token.driver.TokenStoreDriver;
+import de.craftsblock.cnet.modules.security.token.driver.StoreDriver;
 import de.craftsblock.cnet.modules.security.token.group.GroupManager;
 import de.craftsblock.craftsnet.CraftsNet;
 import de.craftsblock.craftsnet.addon.Addon;
@@ -21,8 +20,7 @@ public class CraftsNetSecurity extends Addon {
     private GroupManager groupManager;
     private TokenManager tokenManager;
 
-    private GroupStoreDriver groupStoreDriver;
-    private TokenStoreDriver tokenStoreDriver;
+    private StoreDriver storeDriver;
 
     public static void main(String[] args) throws IOException {
         CraftsNet.create(CraftsNetSecurity.class)
@@ -48,7 +46,7 @@ public class CraftsNetSecurity extends Addon {
     @Override
     public void onDisable() {
         super.onDisable();
-        this.tokenStoreDriver.close();
+        this.storeDriver.close();
     }
 
     public static @NotNull AuthChain getAuthChain() {
@@ -71,20 +69,12 @@ public class CraftsNetSecurity extends Addon {
         return getInstance().tokenManager;
     }
 
-    public synchronized static void setGroupStoreDriver(@NotNull GroupStoreDriver groupStoreDriver) {
-        getInstance().groupStoreDriver = groupStoreDriver;
+    public synchronized static void setStoreDriver(@NotNull StoreDriver storeDriver) {
+        getInstance().storeDriver = storeDriver;
     }
 
-    public synchronized static GroupStoreDriver getGroupStoreDriver() {
-        return getInstance().groupStoreDriver;
-    }
-
-    public synchronized static void setTokenStoreDriver(@NotNull TokenStoreDriver tokenStoreDriver) {
-        getInstance().tokenStoreDriver = tokenStoreDriver;
-    }
-
-    public synchronized static TokenStoreDriver getTokenStoreDriver() {
-        return getInstance().tokenStoreDriver;
+    public synchronized static StoreDriver getStoreDriver() {
+        return getInstance().storeDriver;
     }
 
     public static CraftsNetSecurity getInstance() {

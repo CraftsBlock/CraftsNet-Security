@@ -20,39 +20,39 @@ public class GroupManager {
     }
 
     public synchronized Group createOrUpdateGroup(String name, Consumer<Group> updater) {
-        GroupStoreDriver driver = CraftsNetSecurity.getGroupStoreDriver();
-        if (driver.exists(name)) {
+        GroupStoreDriver driver = CraftsNetSecurity.getStoreDriver();
+        if (driver.existsGroup(name)) {
             return this.updateGroup(name, updater);
         }
 
         Group group = this.createGroup(name);
         updater.accept(group);
-        driver.save(group);
+        driver.saveGroup(group);
         return group;
     }
 
     public synchronized Group createGroup(String name, String... scopes) {
-        GroupStoreDriver driver = CraftsNetSecurity.getGroupStoreDriver();
+        GroupStoreDriver driver = CraftsNetSecurity.getStoreDriver();
         Group existing = getGroup(name);
         if (existing != null) {
             return existing;
         }
 
         Group group = new Group(name, Arrays.asList(scopes));
-        driver.save(group);
+        driver.saveGroup(group);
         groupCache.put(name, group);
         return group;
     }
 
     public synchronized Group updateGroup(String name, Consumer<Group> updater) {
-        GroupStoreDriver driver = CraftsNetSecurity.getGroupStoreDriver();
+        GroupStoreDriver driver = CraftsNetSecurity.getStoreDriver();
         Group group = getGroup(name);
         if (group == null) {
             return null;
         }
 
         updater.accept(group);
-        driver.save(group);
+        driver.saveGroup(group);
         return group;
     }
 
@@ -61,8 +61,8 @@ public class GroupManager {
             return groupCache.get(name);
         }
 
-        GroupStoreDriver driver = CraftsNetSecurity.getGroupStoreDriver();
-        Group group = driver.load(name);
+        GroupStoreDriver driver = CraftsNetSecurity.getStoreDriver();
+        Group group = driver.loadGroup(name);
         if (group == null) {
             return null;
         }
@@ -72,7 +72,7 @@ public class GroupManager {
     }
 
     public synchronized void deleteGroup(String name) {
-        CraftsNetSecurity.getGroupStoreDriver().delete(name);
+        CraftsNetSecurity.getStoreDriver().deleteGroup(name);
         groupCache.remove(name);
     }
 

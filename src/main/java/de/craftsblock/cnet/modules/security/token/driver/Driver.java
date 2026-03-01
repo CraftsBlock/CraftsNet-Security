@@ -1,8 +1,9 @@
 package de.craftsblock.cnet.modules.security.token.driver;
 
-public sealed interface Driver
+sealed interface Driver extends AutoCloseable
         permits GroupStoreDriver, TokenStoreDriver {
 
-    void reload();
+    @Override
+    void close();
 
 }

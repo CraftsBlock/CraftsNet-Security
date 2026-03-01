@@ -7,32 +7,28 @@ import de.craftsblock.cnet.modules.security.token.event.TokenPersistEvent;
 
 import java.util.Collection;
 
-public non-sealed interface TokenStoreDriver extends AutoCloseable, Driver {
+public non-sealed interface TokenStoreDriver extends Driver {
 
-    @Override
     default void reload() {
         CraftsNetSecurity.getTokenManager().clearCache();
     }
 
-    boolean exists(long id);
+    boolean existsToken(long id);
 
-    Token load(long id);
+    Token loadToken(long id);
 
-    default void save(Token token) {
+    default void saveToken(Token token) {
         CraftsNetSecurity.getInstance().getListenerRegistry().call(new TokenPersistEvent(token));
     }
 
-    default void delete(long id) {
-        this.delete(load(id));
+    default void deleteToken(long id) {
+        this.deleteToken(loadToken(id));
     }
 
-    default void delete(Token token) {
+    default void deleteToken(Token token) {
         CraftsNetSecurity.getInstance().getListenerRegistry().call(new TokenDeleteEvent(token));
     }
 
     Collection<Long> getAllTokenIds();
-
-    @Override
-    void close();
 
 }

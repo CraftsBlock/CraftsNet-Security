@@ -16,7 +16,6 @@ import de.craftsblock.craftsnet.api.websocket.ClosureCode;
 import de.craftsblock.craftsnet.api.websocket.Opcode;
 import de.craftsblock.craftsnet.api.websocket.SocketExchange;
 import de.craftsblock.craftsnet.api.websocket.WebSocketClient;
-import de.craftsblock.craftsnet.autoregister.meta.AutoRegister;
 import de.craftsblock.craftsnet.events.sockets.message.IncomingSocketMessageEvent;
 import de.craftsblock.craftsnet.events.sockets.message.OutgoingSocketMessageEvent;
 

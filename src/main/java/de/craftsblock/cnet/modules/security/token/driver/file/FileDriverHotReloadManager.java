@@ -46,7 +46,7 @@ class FileDriverHotReloadManager extends Thread implements AutoCloseable {
                 }
                 key.reset();
             }
-        } catch (InterruptedException ignored) {
+        } catch (InterruptedException | ClosedWatchServiceException ignored) {
         }
     }
 

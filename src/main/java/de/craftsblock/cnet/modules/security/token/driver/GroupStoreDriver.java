@@ -5,27 +5,24 @@ import de.craftsblock.cnet.modules.security.token.group.Group;
 
 import java.util.Collection;
 
-public non-sealed interface GroupStoreDriver extends AutoCloseable, Driver {
+public non-sealed interface GroupStoreDriver extends Driver {
 
     default void reload() {
         CraftsNetSecurity.getGroupManager().clearCache();
     }
 
-    boolean exists(String name);
+    boolean existsGroup(String name);
 
-    Group load(String name);
+    Group loadGroup(String name);
 
-    void save(Group token);
+    void saveGroup(Group group);
 
-    default void delete(String name) {
-        this.delete(load(name));
+    default void deleteGroup(String name) {
+        this.deleteGroup(loadGroup(name));
     }
 
-    void delete(Group group);
+    void deleteGroup(Group group);
 
     Collection<String> getAllGroupNames();
-
-    @Override
-    void close();
 
 }

@@ -11,7 +11,7 @@ import java.util.Set;
 
 public final class FileTokenStoreDriver extends AbstractFileStoreDriver implements TokenStoreDriver {
 
-    public FileTokenStoreDriver(@NotNull Path tokensFile) {
+    FileTokenStoreDriver(@NotNull Path tokensFile) {
         super(tokensFile);
     }
 
@@ -22,14 +22,14 @@ public final class FileTokenStoreDriver extends AbstractFileStoreDriver implemen
     }
 
     @Override
-    public boolean exists(long id) {
+    public boolean existsToken(long id) {
         return this.json(json -> {
             return json.contains(String.valueOf(id));
         });
     }
 
     @Override
-    public Token load(long id) {
+    public Token loadToken(long id) {
         Json token = this.json(json -> {
             return json.getJson(String.valueOf(id));
         });
@@ -42,19 +42,20 @@ public final class FileTokenStoreDriver extends AbstractFileStoreDriver implemen
     }
 
     @Override
-    public void save(@NotNull Token token) {
+    public void saveToken(@NotNull Token token) {
         this.json(json -> {
             json.set(String.valueOf(token.id()), token.toJson());
             json.save(file);
+            TokenStoreDriver.super.saveToken(token);
         });
     }
 
     @Override
-    public void delete(Token token) {
+    public void deleteToken(Token token) {
         this.json(json -> {
             json.remove(String.valueOf(token.id()));
             json.save(file);
-            TokenStoreDriver.super.delete(token);
+            TokenStoreDriver.super.deleteToken(token);
         });
     }
 

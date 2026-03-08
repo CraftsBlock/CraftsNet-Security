@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.internal.Streams;
 import de.craftsblock.cnet.modules.security.CraftsNetSecurity;
 import de.craftsblock.cnet.modules.security.token.driver.GroupStoreDriver;
+import de.craftsblock.cnet.modules.security.token.group.Group;
 import de.craftsblock.cnet.modules.security.token.group.GroupManager;
 import de.craftsblock.cnet.modules.security.token.group.OptionalGroup;
 import de.craftsblock.craftscore.json.Json;
@@ -32,9 +33,8 @@ public record Token(long id, @NotNull String hash, @NotNull @UnmodifiableView Co
         this.tokenDataContainer = tokenDataContainer;
     }
 
-    @Override
-    public @NotNull @UnmodifiableView Collection<String> scopes() {
-        return scopes;
+    public Collection<String> groupNames() {
+        return groups.stream().map(OptionalGroup::name).toList();
     }
 
     public boolean validate(byte @NotNull [] secret) {

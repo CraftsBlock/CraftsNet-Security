@@ -27,7 +27,7 @@ public record PreRequestListener(CraftsNet craftsNet, CraftsNetSecurity addon) i
         this(craftsNet, CraftsNetSecurity.getInstance());
     }
 
-    @EventHandler(priority = EventPriority.NORMAL, ignoreWhenCancelled = true)
+    @EventHandler(priority = EventPriority.LOW, ignoreWhenCancelled = true)
     public void handlePreRequestEvent(PreRequestEvent event) {
         final Exchange exchange = event.getExchange();
         final Request request = exchange.request();

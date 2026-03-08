@@ -70,4 +70,8 @@ public class TokenUtil {
         return TOKEN_PREFIX;
     }
 
+    public static byte[] getTokenPartSeparatorBytes() {
+        return TOKEN_PART_SEPARATOR_BYTES;
+    }
+
 }

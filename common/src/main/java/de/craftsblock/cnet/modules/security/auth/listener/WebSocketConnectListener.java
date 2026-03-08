@@ -26,7 +26,7 @@ public record WebSocketConnectListener(CraftsNet craftsNet, CraftsNetSecurity ad
         this(craftsNet, CraftsNetSecurity.getInstance());
     }
 
-    @EventHandler(priority = EventPriority.NORMAL, ignoreWhenCancelled = true)
+    @EventHandler(priority = EventPriority.LOW, ignoreWhenCancelled = true)
     public void handleConnect(ClientConnectEvent event) {
         final SocketExchange exchange = event.getExchange();
         this.authenticate(

@@ -1,12 +1,13 @@
 {
   "name": "CNetSecurity",
   "main": "de.craftsblock.cnet.modules.security.CraftsNetSecurity",
+  "description": "Protect your craftsnet api with easy drop in security features.",
+  "website": "https://craftsblock.de",
+  "version": "1.0.0",
   "authors": [
     "Philipp Maywald",
     "CraftsBlock"
   ],
-  "website": "https://craftsblock.de",
-  "version": "1.0.0-pre10",
   "repositories": [
     "https://repo.craftsblock.de/releases"
   ],

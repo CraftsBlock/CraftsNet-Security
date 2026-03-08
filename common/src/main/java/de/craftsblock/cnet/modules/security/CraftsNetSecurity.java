@@ -33,6 +33,7 @@ public class CraftsNetSecurity extends Addon {
 
     @Override
     public void onLoad() {
+        super.onLoad();
         this.authChain = new AuthChain();
         this.groupManager = new GroupManager();
         this.tokenManager = new TokenManager();

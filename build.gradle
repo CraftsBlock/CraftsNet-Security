@@ -1,88 +1,94 @@
 plugins {
-    id 'java'
-    id 'maven-publish'
-    id "de.craftsblock.gradle.publish" version "0.0.20"
+    id "de.craftsblock.gradle.publish" version "0.0.20" apply false
 }
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+version = "1.0.0-pre1"
 
-    withJavadocJar()
-    withSourcesJar()
-}
+subprojects {
+    apply plugin: "java"
+    apply plugin: "maven-publish"
+    apply plugin: "de.craftsblock.gradle.publish"
 
-group = 'de.craftsblock.craftsnet.modules'
-version = '1.0.0-pre10'
+    java {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
 
-repositories {
-    mavenCentral()
-    maven { url "https://repo.craftsblock.de/releases" }
-    maven { url "https://repo.craftsblock.de/experimental" }
-}
-
-dependencies {
-    // CraftsBlock dependencies ----------------------------------------------------------------------------------------
-
-    // https://repo.craftsblock.de/#/releases/de/craftsblock/craftscore/bom
-    implementation platform("de.craftsblock.craftscore:bom:3.8.13-pre8")
-
-    // https://repo.craftsblock.de/#/releases/de/craftsblock/craftsnet
-    implementation "de.craftsblock:craftsnet:3.7.0-pre8"
-
-    // Third party dependencies ----------------------------------------------------------------------------------------
-
-    // https://mvnrepository.com/artifact/org.springframework.security/spring-security-crypto
-    implementation 'org.springframework.security:spring-security-crypto:7.0.2'
-
-    // https://mvnrepository.com/artifact/org.jetbrains/annotations
-    implementation 'org.jetbrains:annotations:26.0.2'
-
-}
-
-tasks.withType(JavaCompile).configureEach {
-    options.encoding = 'UTF-8'
-}
-
-jar {
-    from sourceSets.main.output
-
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-
-    manifest {
-        attributes(
-                'Implementation-Title': project.name,
-                'Implementation-Version': project.version
-        )
+        withJavadocJar()
+        withSourcesJar()
     }
-}
 
-craftsPublish {
-    artifactId = "security"
-    name = "CraftsNet"
+    repositories {
+        mavenCentral()
+        maven { url "https://repo.craftsblock.de/releases" }
+        maven { url "https://repo.craftsblock.de/experimental" }
+    }
 
-    component = project.components.java
+    dependencies {
+        // CraftsBlock dependencies ----------------------------------------------------------------------------------------
 
-    pom {
-        name = "Security"
-        description = "Protect your CraftsNet API with easy drop in security features."
+        // https://repo.craftsblock.de/#/releases/de/craftsblock/craftscore/bom
+        implementation platform("de.craftsblock.craftscore:bom:3.8.13-pre8")
 
-        scm {
-            url = 'https://github.com/CraftsBlock/CraftsNet-Security'
-            connection = 'scm:git:git://github.com/CraftsBlock/CraftsNet-Security.git'
-            developerConnection = 'scm:git:git@github.com:CraftsBlock/CraftsNet-Security.git'
+        // https://repo.craftsblock.de/#/releases/de/craftsblock/craftsnet
+        implementation "de.craftsblock:craftsnet:3.7.0-pre8"
+
+        // Third party dependencies ----------------------------------------------------------------------------------------
+
+        // https://mvnrepository.com/artifact/org.springframework.security/spring-security-crypto
+        implementation 'org.springframework.security:spring-security-crypto:7.1.0-M2'
+
+        // https://mvnrepository.com/artifact/org.jetbrains/annotations
+        implementation 'org.jetbrains:annotations:26.1.0'
+
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+        options.encoding = 'UTF-8'
+    }
+
+    jar {
+        from sourceSets.main.output
+
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+        manifest {
+            attributes(
+                    'Implementation-Title': project.name,
+                    'Implementation-Version': project.version
+            )
         }
+    }
 
-        issueManagement {
-            system = 'github'
-            url = 'https://github.com/CraftsBlock/CraftsNet-Security/issues'
-        }
+    craftsPublish {
+        artifactId = project.name
+        name = "CraftsNet Security ${project.name}"
 
-        licenses {
-            license {
-                name = 'GNU General Public License v3.0'
-                url = 'https://github.com/CraftsBlock/CraftsNet-Security/blob/master/LICENSE'
+        component = project.components.java
+
+        pom {
+            name = project.name
+            description = project.description
+
+            scm {
+                url = 'https://github.com/CraftsBlock/CraftsNet-Security'
+                connection = 'scm:git:git://github.com/CraftsBlock/CraftsNet-Security.git'
+                developerConnection = 'scm:git:git@github.com:CraftsBlock/CraftsNet-Security.git'
+            }
+
+            issueManagement {
+                system = 'github'
+                url = 'https://github.com/CraftsBlock/CraftsNet-Security/issues'
+            }
+
+            licenses {
+                license {
+                    name = 'GNU General Public License v3.0'
+                    url = 'https://github.com/CraftsBlock/CraftsNet-Security/blob/master/LICENSE'
+                }
             }
         }
     }
+
+    group = 'de.craftsblock.craftsnet.modules.security'
+    version = rootProject.version
 }

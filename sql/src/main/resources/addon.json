@@ -1,0 +1,21 @@
+{
+  "name": "CNetSecuritySQLDriver",
+  "main": "de.craftsblock.cnet.modules.security.CNetSecuritySQLDriver",
+  "version": "1.0.0",
+  "description": "A sql driver for craftsnet security",
+  "website": "https://craftsnet.de",
+  "author": [
+    "Philipp Maywald",
+    "CraftsBlock"
+  ],
+  "depends": [
+    "CNetSecurity"
+  ],
+  "repositories": [
+    "https://repo.craftsblock.de/releases",
+    "https://repo.craftsblock.de/experimental"
+  ],
+  "dependencies": [
+    "de.craftsblock.craftscore:sql:3.8.13-pre8"
+  ]
+}

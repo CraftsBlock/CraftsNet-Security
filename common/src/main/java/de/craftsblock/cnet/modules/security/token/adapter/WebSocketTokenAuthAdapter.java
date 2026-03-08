@@ -33,7 +33,7 @@ public class WebSocketTokenAuthAdapter implements ListenerAdapter, AuthAdapter.W
         return AuthResult.skip();
     }
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreWhenCancelled = true)
+    @EventHandler(priority = EventPriority.NORMAL, ignoreWhenCancelled = true)
     public void handleIncomingMessage(IncomingSocketMessageEvent event) {
         final SocketExchange exchange = event.getExchange();
         final Context context = exchange.context();

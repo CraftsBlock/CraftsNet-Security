@@ -44,7 +44,7 @@ public class GroupResolveMiddleware implements ListenerAdapter {
 
         final Token token = context.getTyped(Token.class);
         final GroupRequest result = context.getTyped(GroupRequest.class);
-        if (token.groups().containsAll(result.groups())) {
+        if (token.groupNames().containsAll(result.groups())) {
             return;
         }
 
@@ -56,7 +56,7 @@ public class GroupResolveMiddleware implements ListenerAdapter {
         onFailure.accept(subject);
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreWhenCancelled = true)
+    @EventHandler(priority = EventPriority.NORMAL, ignoreWhenCancelled = true)
     public void handleRequest(RouteRequestEvent event) {
         final Exchange exchange = event.getExchange();
         handle(exchange, event, exchange.response(), response -> {
@@ -70,7 +70,7 @@ public class GroupResolveMiddleware implements ListenerAdapter {
         });
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreWhenCancelled = true)
+    @EventHandler(priority = EventPriority.HIGH, ignoreWhenCancelled = true)
     public void handleWebSocketMessage(IncomingSocketMessageEvent event) {
         final SocketExchange exchange = event.getExchange();
         handle(exchange, event, exchange.client(), client -> {

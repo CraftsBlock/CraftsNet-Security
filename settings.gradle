@@ -9,3 +9,6 @@ pluginManagement {
 
 rootProject.name = 'Security'
 
+
+include 'sql'
+include 'common'

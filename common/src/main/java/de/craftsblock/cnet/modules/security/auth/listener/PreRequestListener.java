@@ -8,6 +8,7 @@ import de.craftsblock.craftscore.json.Json;
 import de.craftsblock.craftsnet.CraftsNet;
 import de.craftsblock.craftsnet.addon.meta.Startup;
 import de.craftsblock.craftsnet.api.http.Exchange;
+import de.craftsblock.craftsnet.api.http.HttpStatus;
 import de.craftsblock.craftsnet.api.http.Request;
 import de.craftsblock.craftsnet.api.http.Response;
 import de.craftsblock.craftsnet.autoregister.meta.AutoRegister;
@@ -41,7 +42,7 @@ public record PreRequestListener(CraftsNet craftsNet, CraftsNetSecurity addon) i
             ));
 
             if (!response.headersSent()) {
-                response.setCode(400);
+                response.setStatus(HttpStatus.ClientError.BAD_REQUEST);
             }
 
             if (response.sendingFile()) {

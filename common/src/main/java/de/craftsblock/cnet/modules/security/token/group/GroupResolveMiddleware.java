@@ -8,6 +8,7 @@ import de.craftsblock.craftscore.event.ListenerAdapter;
 import de.craftsblock.craftscore.json.Json;
 import de.craftsblock.craftsnet.api.BaseExchange;
 import de.craftsblock.craftsnet.api.http.Exchange;
+import de.craftsblock.craftsnet.api.http.HttpStatus;
 import de.craftsblock.craftsnet.api.utils.Context;
 import de.craftsblock.craftsnet.api.websocket.ClosureCode;
 import de.craftsblock.craftsnet.api.websocket.SocketExchange;
@@ -61,7 +62,7 @@ public class GroupResolveMiddleware implements ListenerAdapter {
         final Exchange exchange = event.getExchange();
         handle(exchange, event, exchange.response(), response -> {
             if (!response.headersSent()) {
-                response.setCode(400);
+                response.setStatus(HttpStatus.ClientError.BAD_REQUEST);
             }
 
             if (!response.sendingFile()) {

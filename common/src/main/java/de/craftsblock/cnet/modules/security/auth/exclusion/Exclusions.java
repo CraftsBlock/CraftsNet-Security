@@ -17,15 +17,12 @@ public final class Exclusions {
         synchronized (httpExclusions) {
             for (Exclusion exclusion : httpExclusions) {
                 if (!(exclusion instanceof HttpExclusion httpExclusion)) {
-                    continue;
-                }
-
-                if (!exclusion.path().pattern().equals(path)) {
                     throw new IllegalStateException("Found a non http exclusion "
                             + exclusion.getClass().getName() + " in the http list!");
                 }
 
-                if (httpExclusion.methods().containsAll(Arrays.asList(HttpMethod.normalize(methods)))) {
+                if (exclusion.path().pattern().equals(path) &&
+                        httpExclusion.methods().containsAll(Arrays.asList(HttpMethod.normalize(methods)))) {
                     return this;
                 }
             }

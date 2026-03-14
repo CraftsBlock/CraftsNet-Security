@@ -6,6 +6,7 @@ import de.craftsblock.cnet.modules.security.token.group.GroupManager;
 import de.craftsblock.cnet.modules.security.token.group.OptionalGroup;
 import de.craftsblock.craftscore.json.Json;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Unmodifiable;
 import org.jetbrains.annotations.UnmodifiableView;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
@@ -21,12 +22,21 @@ public record Token(long id, @NotNull String hash, @NotNull @UnmodifiableView Co
         this.id = id;
         this.hash = hash;
         this.groups = Collections.unmodifiableCollection(groups);
-        this.scopes = Stream.concat(
+        this.scopes = Collections.unmodifiableCollection(scopes);
+        this.tokenDataContainer = tokenDataContainer;
+    }
+
+    @Override
+    public @NotNull @Unmodifiable Collection<String> scopes() {
+        return Stream.concat(
                 scopes.stream(),
                 groups.stream().filter(OptionalGroup::persisted)
                         .flatMap(group -> group.scopes().stream())
         ).distinct().toList();
-        this.tokenDataContainer = tokenDataContainer;
+    }
+
+    public @NotNull @UnmodifiableView Collection<String> directScopes() {
+        return scopes;
     }
 
     public Collection<String> groupNames() {
@@ -75,7 +85,6 @@ public record Token(long id, @NotNull String hash, @NotNull @UnmodifiableView Co
         });
 
         TokenDataContainer tokenDataContainer = new TokenDataContainer(serializedTokenDataContainer);
-        GroupManager groupManager = CraftsNetSecurity.getGroupManager();
         return new Token(
                 json.getLong("id"),
                 json.getString("hash"),

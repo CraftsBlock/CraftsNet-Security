@@ -1,15 +1,11 @@
 package de.craftsblock.cnet.modules.security.token;
 
 import com.google.gson.JsonObject;
-import com.google.gson.internal.Streams;
 import de.craftsblock.cnet.modules.security.CraftsNetSecurity;
-import de.craftsblock.cnet.modules.security.token.driver.GroupStoreDriver;
-import de.craftsblock.cnet.modules.security.token.group.Group;
 import de.craftsblock.cnet.modules.security.token.group.GroupManager;
 import de.craftsblock.cnet.modules.security.token.group.OptionalGroup;
 import de.craftsblock.craftscore.json.Json;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Unmodifiable;
 import org.jetbrains.annotations.UnmodifiableView;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 

@@ -30,7 +30,7 @@ subprojects {
         implementation platform("de.craftsblock.craftscore:bom:3.8.13-pre8")
 
         // https://repo.craftsblock.de/#/releases/de/craftsblock/craftsnet
-        implementation "de.craftsblock:craftsnet:3.7.0-pre9"
+        implementation "de.craftsblock:craftsnet:3.7.0"
 
         // Third party dependencies ----------------------------------------------------------------------------------------
 

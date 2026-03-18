@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -25,6 +24,7 @@ public class SQLWorker {
 
     protected final void update(PreparedStatement statement) {
         ensureOpen();
+
         try (statement) {
             statement.executeUpdate();
         } catch (SQLException e) {

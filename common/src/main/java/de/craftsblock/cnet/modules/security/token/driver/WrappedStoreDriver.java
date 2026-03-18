@@ -16,12 +16,6 @@ public class WrappedStoreDriver<G extends GroupStoreDriver, T extends TokenStore
     }
 
     @Override
-    public void close() {
-        this.groupStoreDriver.close();
-        this.tokenStoreDriver.close();
-    }
-
-    @Override
     public boolean existsGroup(String name) {
         return this.groupStoreDriver.existsGroup(name);
     }

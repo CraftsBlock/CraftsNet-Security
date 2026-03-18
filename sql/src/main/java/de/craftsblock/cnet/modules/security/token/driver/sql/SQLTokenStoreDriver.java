@@ -7,10 +7,10 @@ import de.craftsblock.cnet.modules.security.token.group.OptionalGroup;
 import de.craftsblock.craftsnet.utils.PassphraseUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 public final class SQLTokenStoreDriver extends AbstractSQLStoreDriver implements TokenStoreDriver {
 

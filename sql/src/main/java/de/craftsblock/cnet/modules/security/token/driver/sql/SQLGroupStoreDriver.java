@@ -8,7 +8,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 public final class SQLGroupStoreDriver extends AbstractSQLStoreDriver implements GroupStoreDriver {
 

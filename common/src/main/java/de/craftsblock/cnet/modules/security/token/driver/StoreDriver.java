@@ -4,11 +4,18 @@ public interface StoreDriver
         extends AutoCloseable, GroupStoreDriver, TokenStoreDriver {
 
     @Override
-    void close();
+    default void close() {
+        synchronized (this) {
+            getGroupStoreDriver().close();
+            getTokenStoreDriver().close();
+        }
+    }
 
     default void reload() {
-        GroupStoreDriver.super.reload();
-        TokenStoreDriver.super.reload();
+        synchronized (this) {
+            getGroupStoreDriver().reload();
+            getTokenStoreDriver().reload();
+        }
     }
 
     default GroupStoreDriver getGroupStoreDriver() {

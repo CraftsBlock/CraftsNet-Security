@@ -1,6 +1,6 @@
 {
   "name": "CNetSecuritySQLDriver",
-  "main": "de.craftsblock.cnet.modules.security.CNetSecuritySQLDriver",
+  "main": "CraftsNetSecuritySQLDriver",
   "version": "1.0.0",
   "description": "A sql driver for craftsnet security",
   "website": "https://craftsnet.de",

@@ -40,7 +40,7 @@ class FileDriverHotReloadManager extends Thread implements AutoCloseable {
                     Path realPath = driver.getDirectory().resolve(path);
                     if (realPath.equals(driver.getFile().toAbsolutePath())) {
                         CraftsNetSecurity.getInstance().getLogger().debug("Detected file system change, " +
-                                "reloading token file.");
+                                "reloading %s file.", driver.getFile().getFileName());
                         driver.reload();
                     }
                 }

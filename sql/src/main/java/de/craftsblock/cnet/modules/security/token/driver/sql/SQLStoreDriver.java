@@ -14,18 +14,20 @@ import java.util.function.Supplier;
 
 public class SQLStoreDriver extends WrappedStoreDriver<SQLGroupStoreDriver, SQLTokenStoreDriver> {
 
+    private final @NotNull Supplier<@NotNull Connection> connectionSupplier;
+    private final @NotNull SQLReloadProvider sqlReloadProvider;
+
     private final @NotNull SQLScopeDriver scopeDriver;
     private final @NotNull SQLSchemaUpdater schemaUpdater;
-
-    private final @NotNull SQLReloadProvider groupSQLReloadProvider;
-    private final @NotNull SQLReloadProvider tokenSQLReloadProvider;
 
     SQLStoreDriver(@NotNull SQLGroupStoreDriver groupStoreDriver,
                    @NotNull SQLScopeDriver scopeDriver,
                    @NotNull SQLTokenStoreDriver tokenStoreDriver,
                    @NotNull SQLSchemaUpdater schemaUpdater,
-                   @NotNull Function<@NotNull AbstractSQLStoreDriver, @NotNull SQLReloadProvider> providerFactory) {
+                   @NotNull Supplier<@NotNull Connection> connectionSupplier,
+                   @NotNull Function<@NotNull SQLStoreDriver, @NotNull SQLReloadProvider> providerFactory) {
         super(groupStoreDriver, tokenStoreDriver);
+        this.connectionSupplier = connectionSupplier;
 
         this.scopeDriver = scopeDriver;
         this.schemaUpdater = schemaUpdater;
@@ -42,8 +44,24 @@ public class SQLStoreDriver extends WrappedStoreDriver<SQLGroupStoreDriver, SQLT
             logger.debug("Your db schema is on the newest version %s", this.schemaUpdater.getCurrentInstalledVersion());
         }
 
-        this.groupSQLReloadProvider = providerFactory.apply(groupStoreDriver);
-        this.tokenSQLReloadProvider = providerFactory.apply(tokenStoreDriver);
+        this.sqlReloadProvider = providerFactory.apply(this);
+    }
+
+    @Override
+    public synchronized void close() {
+        try {
+            if (sqlReloadProvider instanceof AutoCloseable autoCloseable) {
+                autoCloseable.close();
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to close the sql reload provider: " + e.getMessage(), e);
+        }
+
+        super.close();
+    }
+
+    public @NotNull Supplier<@NotNull Connection> getConnectionSupplier() {
+        return connectionSupplier;
     }
 
     @Override
@@ -64,12 +82,8 @@ public class SQLStoreDriver extends WrappedStoreDriver<SQLGroupStoreDriver, SQLT
         return schemaUpdater;
     }
 
-    public @NotNull SQLReloadProvider getTokenSQLReloadProvider() {
-        return tokenSQLReloadProvider;
-    }
-
-    public @NotNull SQLReloadProvider getGroupSQLReloadProvider() {
-        return groupSQLReloadProvider;
+    public @NotNull SQLReloadProvider getSqlReloadProvider() {
+        return sqlReloadProvider;
     }
 
     public static SQLStoreDriver create(@NotNull Supplier<@NotNull Connection> connectionSupplier) {
@@ -77,12 +91,13 @@ public class SQLStoreDriver extends WrappedStoreDriver<SQLGroupStoreDriver, SQLT
     }
 
     public static SQLStoreDriver create(@NotNull Supplier<@NotNull Connection> connectionSupplier,
-                                        @NotNull Function<@NotNull AbstractSQLStoreDriver, @NotNull SQLReloadProvider> providerFactory) {
+                                        @NotNull Function<@NotNull SQLStoreDriver, @NotNull SQLReloadProvider> providerFactory) {
         return new SQLStoreDriver(
                 new SQLGroupStoreDriver(connectionSupplier),
                 new SQLScopeDriver(connectionSupplier),
                 new SQLTokenStoreDriver(connectionSupplier),
                 new SQLSchemaUpdater(connectionSupplier),
+                connectionSupplier,
                 providerFactory
         );
     }

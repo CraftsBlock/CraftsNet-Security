@@ -1,3 +1,12 @@
+plugins {
+    id "java"
+    id "application"
+}
+
+application {
+    mainClass = "de.craftsblock.cnet.modules.security.CNetSecuritySQLDriver"
+}
+
 dependencies {
     implementation project(":common")
 

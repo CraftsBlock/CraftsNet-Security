@@ -1,1 +1,10 @@
+plugins {
+    id "java"
+    id "application"
+}
+
+application {
+    mainClass = "de.craftsblock.cnet.modules.security.CraftsNetSecurity"
+}
+
 description = "Protect your CraftsNet API with easy drop in security features."

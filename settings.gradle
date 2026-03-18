@@ -12,3 +12,4 @@ rootProject.name = 'Security'
 
 include 'sql'
 include 'common'
+include 'bom'

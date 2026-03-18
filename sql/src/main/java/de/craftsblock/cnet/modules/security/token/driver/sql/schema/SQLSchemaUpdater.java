@@ -2,7 +2,7 @@ package de.craftsblock.cnet.modules.security.token.driver.sql.schema;
 
 import de.craftsblock.cnet.modules.security.CraftsNetSecurity;
 import de.craftsblock.cnet.modules.security.token.driver.sql.SQLWorker;
-import de.craftsblock.cnet.modules.security.token.driver.sql.schema.upgardes.Update2026_03_09;
+import de.craftsblock.cnet.modules.security.token.driver.sql.schema.upgardes.SQLSchemaUpdate2026_03_09;
 import de.craftsblock.craftsnet.logging.Logger;
 import org.jetbrains.annotations.Contract;
 
@@ -19,7 +19,7 @@ public class SQLSchemaUpdater extends SQLWorker {
     public SQLSchemaUpdater(Supplier<Connection> connectionSupplier) {
         super(connectionSupplier);
         this.versions = new LinkedList<>(List.of(
-                new Update2026_03_09(this)
+                new SQLSchemaUpdate2026_03_09(this)
         ));
     }
 

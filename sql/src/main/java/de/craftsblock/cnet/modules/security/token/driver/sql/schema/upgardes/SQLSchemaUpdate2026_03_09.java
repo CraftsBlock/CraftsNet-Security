@@ -4,9 +4,9 @@ import de.craftsblock.cnet.modules.security.CraftsNetSecurity;
 import de.craftsblock.cnet.modules.security.token.driver.sql.schema.SQLSchemaUpdater;
 import de.craftsblock.cnet.modules.security.token.driver.sql.schema.SQLSchemaUpgrade;
 
-public class Update2026_03_09 extends SQLSchemaUpgrade {
+public class SQLSchemaUpdate2026_03_09 extends SQLSchemaUpgrade {
 
-    public Update2026_03_09(SQLSchemaUpdater updater) {
+    public SQLSchemaUpdate2026_03_09(SQLSchemaUpdater updater) {
         super(updater, "2026-03-09");
     }
 

@@ -1,8 +1,6 @@
 package de.craftsblock.cnet.modules.security.token;
 
 import com.google.gson.JsonObject;
-import de.craftsblock.cnet.modules.security.CraftsNetSecurity;
-import de.craftsblock.cnet.modules.security.token.group.GroupManager;
 import de.craftsblock.cnet.modules.security.token.group.OptionalGroup;
 import de.craftsblock.craftscore.json.Json;
 import org.jetbrains.annotations.NotNull;

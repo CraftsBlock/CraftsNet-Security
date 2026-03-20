@@ -9,7 +9,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
 
-public record OptionalGroup(@NotNull String name, Optional<Group> optionalGroup) {
+public record OptionalGroup(@NotNull String name, @NotNull Optional<Group> optionalGroup) {
 
     public boolean persisted() {
         return optionalGroup.isPresent();
@@ -28,11 +28,16 @@ public record OptionalGroup(@NotNull String name, Optional<Group> optionalGroup)
         return group.scopes();
     }
 
+    public static OptionalGroup of(@NotNull String name, @Nullable Group group) {
+        if (group != null) {
+            return new OptionalGroup(group.name(), Optional.of(group));
+        }
+
+        return new OptionalGroup(name, Optional.empty());
+    }
+
     public static OptionalGroup fromString(String name) {
-        return new OptionalGroup(
-                name,
-                Optional.ofNullable(CraftsNetSecurity.getGroupManager().getGroup(name))
-        );
+        return of(name, CraftsNetSecurity.getGroupManager().getGroup(name));
     }
 
     public static Collection<OptionalGroup> fromList(Collection<String> names) {

@@ -1,5 +1,10 @@
 package de.craftsblock.cnet.modules.security.token.adapter;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Objects;
+
 public enum HttpTokenAuthType {
 
     HEADER("Authorization"),
@@ -17,8 +22,15 @@ public enum HttpTokenAuthType {
         this.defaultLocation = defaultLocation;
     }
 
-    public String getDefaultLocation() {
+    public @Nullable String getDefaultLocation() {
         return defaultLocation;
+    }
+
+    public @NotNull String ensureDefaultLocation() {
+        return Objects.requireNonNull(
+                getDefaultLocation(),
+                "There is no default location present for the location " + this
+        );
     }
 
     public boolean hasDefaultLocation() {

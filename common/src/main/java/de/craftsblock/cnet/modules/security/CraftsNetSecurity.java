@@ -7,13 +7,14 @@ import de.craftsblock.cnet.modules.security.token.group.GroupManager;
 import de.craftsblock.craftsnet.CraftsNet;
 import de.craftsblock.craftsnet.addon.Addon;
 import de.craftsblock.craftsnet.addon.meta.annotations.Meta;
-import de.craftsblock.craftsnet.builder.ActivateType;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 
 @Meta(name = "CNetSecurity")
 public class CraftsNetSecurity extends Addon {
+
+    public static final String VERSION = "1.0.0-pre1";
 
     private AuthChain authChain;
 
@@ -24,10 +25,7 @@ public class CraftsNetSecurity extends Addon {
 
     public static void main(String[] args) throws IOException {
         CraftsNet.create(CraftsNetSecurity.class)
-                .withWebServer(ActivateType.ENABLED)
-                .withWebSocketServer(ActivateType.ENABLED)
-                .withFileLogger(ActivateType.DISABLED)
-                .withDebug(true)
+                .withArgs(args)
                 .build();
     }
 

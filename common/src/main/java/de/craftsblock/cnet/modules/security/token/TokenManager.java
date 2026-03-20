@@ -36,7 +36,7 @@ public class TokenManager {
         CraftsNetSecurity.getStoreDriver().deleteToken(token);
     }
 
-    public Token getToken(long id) {
+    public synchronized Token getToken(long id) {
         if (tokenCache.containsKey(id)) {
             return tokenCache.get(id);
         }
@@ -51,7 +51,7 @@ public class TokenManager {
         return token;
     }
 
-    public Token getValidatedToken(String token) {
+    public synchronized Token getValidatedToken(String token) {
         TokenParts parts = TokenUtil.splitToTokenParts(token);
         if (parts == null) {
             return null;
@@ -69,19 +69,19 @@ public class TokenManager {
         }
     }
 
-    public NewToken newPersistedToken(String... scopes) {
+    public synchronized NewToken newPersistedToken(String... scopes) {
         return this.newPersistedToken(List.of(scopes), Collections.emptyList());
     }
 
-    public NewToken newPersistedToken(String[] scopes, String... groups) {
+    public synchronized NewToken newPersistedToken(String[] scopes, String... groups) {
         return this.newPersistedToken(List.of(scopes), List.of(groups));
     }
 
-    public NewToken newPersistedToken(Collection<String> scopes, String... groups) {
+    public synchronized NewToken newPersistedToken(Collection<String> scopes, String... groups) {
         return this.newPersistedToken(scopes, List.of(groups));
     }
 
-    public NewToken newPersistedToken(Collection<String> scopes, Collection<String> groups) {
+    public synchronized NewToken newPersistedToken(Collection<String> scopes, Collection<String> groups) {
         NewToken newToken = newToken(scopes, groups);
         persist(newToken.token());
         return newToken;
@@ -117,8 +117,16 @@ public class TokenManager {
         }
     }
 
-    public void clearCache() {
+    public synchronized void clearCache() {
         this.tokenCache.clear();
+    }
+
+    public synchronized void removeCache(Token token) {
+        this.removeCache(token.id());
+    }
+
+    public synchronized void removeCache(long id) {
+        this.tokenCache.remove(id);
     }
 
 }

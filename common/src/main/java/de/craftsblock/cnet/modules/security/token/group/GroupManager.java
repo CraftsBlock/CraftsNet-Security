@@ -1,6 +1,7 @@
 package de.craftsblock.cnet.modules.security.token.group;
 
 import de.craftsblock.cnet.modules.security.CraftsNetSecurity;
+import de.craftsblock.cnet.modules.security.token.Token;
 import de.craftsblock.cnet.modules.security.token.driver.GroupStoreDriver;
 import de.craftsblock.craftscore.cache.Cache;
 
@@ -78,6 +79,14 @@ public class GroupManager {
 
     public synchronized void clearCache() {
         groupCache.clear();
+    }
+
+    public synchronized void removeCache(Group group) {
+        this.removeCache(group.name());
+    }
+
+    public synchronized void removeCache(String name) {
+        this.groupCache.remove(name);
     }
 
 }

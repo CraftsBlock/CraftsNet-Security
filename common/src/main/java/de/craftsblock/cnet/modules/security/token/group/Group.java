@@ -53,10 +53,6 @@ public final class Group {
                 .set("scopes", scopes);
     }
 
-    public static Group fromJson(Json json) {
-        return new Group(json.getString("name"), json.getStringList("scopes"));
-    }
-
     @Override
     public boolean equals(Object obj) {
         if (obj == this) return true;
@@ -71,5 +67,8 @@ public final class Group {
         return Objects.hash(name, scopes);
     }
 
+    public static Group fromJson(Json json) {
+        return new Group(json.getString("name"), json.getStringList("scopes"));
+    }
 
 }

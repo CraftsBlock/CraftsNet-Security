@@ -1,6 +1,7 @@
 package de.craftsblock.cnet.modules.security.token.driver.sql;
 
 import de.craftsblock.cnet.modules.security.CraftsNetSecurity;
+import de.craftsblock.cnet.modules.security.token.driver.sql.util.SQLBiConsumer;
 import de.craftsblock.cnet.modules.security.token.driver.sql.util.SQLFunction;
 import de.craftsblock.craftsnet.logging.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -30,6 +31,29 @@ public class SQLWorker {
             statement.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException("Could not perform update: " + e.getMessage(), e);
+        }
+    }
+
+    protected final <T> void updateBatch(@NotNull PreparedStatement statement, @NotNull Collection<T> values,
+                                         @NotNull SQLBiConsumer<PreparedStatement, T> valueConsumer) {
+        ensureOpen();
+
+        try (statement) {
+            int batchSize = 500;
+            int count = 0;
+
+            for (T value : values) {
+                valueConsumer.acceptThrows(statement, value);
+                statement.addBatch();
+
+                if (++count % batchSize == 0) {
+                    statement.executeBatch();
+                }
+            }
+
+            statement.executeBatch();
+        } catch (SQLException e) {
+            throw new RuntimeException("Could not perform batch: " + e.getMessage(), e);
         }
     }
 

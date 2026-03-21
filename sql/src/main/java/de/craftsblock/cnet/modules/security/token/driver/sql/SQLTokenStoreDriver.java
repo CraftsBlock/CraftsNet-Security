@@ -118,20 +118,16 @@ public final class SQLTokenStoreDriver extends AbstractSQLStoreDriver implements
             return;
         }
 
-        List<Object> params = new ArrayList<>(scopes.size() * 2);
-        StringJoiner values = new StringJoiner(", ");
-
-        for (Long id : scopes) {
-            values.add("(?, ?)");
-            params.add(id);
-            params.add(token.id());
-        }
-
-        this.update(this.preparedStatementList(
-                "INSERT IGNORE INTO `cnet_security_entity_scopes` (`scope_id`, `token_id`) VALUES %s "
-                        .formatted(values.toString()),
-                params
-        ));
+        final long tokenId = token.id();
+        this.updateBatch(
+                this.preparedStatement(
+                        "INSERT IGNORE INTO `cnet_security_entity_scopes` (`scope_id`, `token_id`) VALUES (?, ?);"
+                ), scopes,
+                (statement, scopeId) -> {
+                    statement.setLong(1, scopeId);
+                    statement.setLong(2, tokenId);
+                }
+        );
     }
 
     private void persistGroups(Token token) {
@@ -139,20 +135,16 @@ public final class SQLTokenStoreDriver extends AbstractSQLStoreDriver implements
             return;
         }
 
-        List<Object> params = new ArrayList<>(token.groupNames().size() * 2);
-        StringJoiner values = new StringJoiner(", ");
-
-        for (String group : token.groupNames()) {
-            values.add("(?, ?)");
-            params.add(token.id());
-            params.add(group);
-        }
-
-        this.update(this.preparedStatementList(
-                "INSERT IGNORE INTO `cnet_security_token_groups` (`token_id`, `group_id`) VALUES %s;".formatted(
-                        values.toString()
-                ), params
-        ));
+        final long tokenId = token.id();
+        this.updateBatch(
+                this.preparedStatement(
+                        "INSERT IGNORE INTO `cnet_security_token_groups` (`token_id`, `group_id`) VALUES (?, ?);"
+                ), token.groupNames(),
+                (statement, group) -> {
+                    statement.setLong(1, tokenId);
+                    statement.setString(2, group);
+                }
+        );
     }
 
     @Override

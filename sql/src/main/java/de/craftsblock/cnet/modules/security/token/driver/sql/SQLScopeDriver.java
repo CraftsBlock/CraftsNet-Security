@@ -25,11 +25,11 @@ final class SQLScopeDriver extends AbstractSQLStoreDriver {
     }
 
     public Map<String, Long> saveScopes(String... scopes) {
-        this.update(this.preparedStatementList(
-                "INSERT IGNORE INTO `cnet_security_scopes` (`value`) VALUES %s;".formatted(
-                        String.join(",", Collections.nCopies(scopes.length, "(?)"))
-                ), List.of(scopes)
-        ));
+        this.updateBatch(
+                this.preparedStatement("INSERT IGNORE INTO `cnet_security_scopes` (`value`) VALUES (?);"),
+                List.of(scopes),
+                (statement, scope) -> statement.setString(1, scope)
+        );
 
         return this.query(this.preparedStatementList(
                 "SELECT `id`, `value` FROM `cnet_security_scopes` WHERE `value` IN (%s)".formatted(

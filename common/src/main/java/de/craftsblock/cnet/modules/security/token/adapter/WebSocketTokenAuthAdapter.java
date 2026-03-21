@@ -16,21 +16,57 @@ import de.craftsblock.craftsnet.api.websocket.ClosureCode;
 import de.craftsblock.craftsnet.api.websocket.Opcode;
 import de.craftsblock.craftsnet.api.websocket.SocketExchange;
 import de.craftsblock.craftsnet.api.websocket.WebSocketClient;
+import de.craftsblock.craftsnet.events.sockets.ClientDisconnectEvent;
 import de.craftsblock.craftsnet.events.sockets.message.IncomingSocketMessageEvent;
 import de.craftsblock.craftsnet.events.sockets.message.OutgoingSocketMessageEvent;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Range;
+import org.jetbrains.annotations.UnmodifiableView;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class WebSocketTokenAuthAdapter implements ListenerAdapter, AuthAdapter.WebSocket {
 
-    private static final String MESSAGE_LITERAL_WRONG_AUTH = "Not allowed!";
-    private static final Json MESSAGE_WRONG_AUTH = Json.empty()
+    private static final @NotNull String MESSAGE_LITERAL_WRONG_AUTH = "Not allowed!";
+    private static final @NotNull Json MESSAGE_WRONG_AUTH = Json.empty()
             .set("success", false)
             .set("error.code", 400)
             .set("error.message", MESSAGE_LITERAL_WRONG_AUTH);
+
+    private static final @NotNull Map<Long, Collection<WebSocketClient>> AUTHENTICATED_CLIENTS = new ConcurrentHashMap<>();
+    private static final @UnmodifiableView
+    @NotNull Map<Long, Collection<WebSocketClient>> AUTHENTICATED_CLIENTS_VIEW = Collections.unmodifiableMap(AUTHENTICATED_CLIENTS);
 
     @Override
     public AuthResult authenticate(SocketExchange exchange) {
         exchange.context().put(new RequireAuth());
         return AuthResult.skip();
+    }
+
+    @EventHandler(priority = EventPriority.NORMAL)
+    public void handleDisconnect(ClientDisconnectEvent event) {
+        final WebSocketClient client = event.getClient();
+        final Context context = client.getContext();
+        final Token token = context.getTyped(Token.class);
+        if (token == null) {
+            return;
+        }
+
+        synchronized (AUTHENTICATED_CLIENTS) {
+            Collection<WebSocketClient> clients = AUTHENTICATED_CLIENTS.get(token.id());
+            if (clients == null) {
+                return;
+            }
+
+            clients.remove(client);
+            if (clients.isEmpty()) {
+                AUTHENTICATED_CLIENTS.remove(token.id(), clients);
+            }
+        }
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreWhenCancelled = true)
@@ -64,7 +100,13 @@ public class WebSocketTokenAuthAdapter implements ListenerAdapter, AuthAdapter.W
 
             CraftsNetSecurity.getInstance().getListenerRegistry().call(new TokenUsedEvent(token));
             context.put(token);
+            context.put(new Authenticated(System.currentTimeMillis()));
             context.remove(RequireAuth.class);
+
+            synchronized (AUTHENTICATED_CLIENTS) {
+                AUTHENTICATED_CLIENTS.computeIfAbsent(token.id(), id -> new ConcurrentLinkedQueue<>())
+                        .add(client);
+            }
         } catch (JsonSyntaxException ignored) {
             failAuth(client, "NOT A JSON");
         }
@@ -90,7 +132,32 @@ public class WebSocketTokenAuthAdapter implements ListenerAdapter, AuthAdapter.W
         event.setCancelled(true);
     }
 
+    public static boolean isAuthenticated(@NotNull WebSocketClient client) {
+        return client.getContext().containsKey(Authenticated.class);
+    }
+
+    public static @Range(from = -2, to = Long.MAX_VALUE) long getAuthenticationTimestamp(@NotNull WebSocketClient client) {
+        final Context context = client.getContext();
+        if (context.containsKey(RequireAuth.class)) {
+            return -1;
+        }
+
+        final Authenticated authenticated = client.getContext().getTyped(Authenticated.class);
+        if (authenticated == null) {
+            return -2;
+        }
+
+        return authenticated.timestamp();
+    }
+
+    public static @UnmodifiableView @NotNull Map<Long, Collection<WebSocketClient>> getAuthenticatedClients() {
+        return AUTHENTICATED_CLIENTS_VIEW;
+    }
+
     private static class RequireAuth {
+    }
+
+    private record Authenticated(long timestamp) {
     }
 
 }

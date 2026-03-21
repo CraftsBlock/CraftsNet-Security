@@ -50,50 +50,46 @@ public class SQLPollingReloadProvider extends SQLReloadProvider implements Runna
     @Override
     public synchronized void run() {
         this.query(this.preparedStatement(SQL_UPDATE_CHECK), resultSet -> {
-            try {
-                boolean reloadGroups = false;
-                boolean reloadTokens = false;
+            boolean reloadGroups = false;
+            boolean reloadTokens = false;
 
-                while (resultSet.next()) {
-                    final String entity = resultSet.getString("entity");
-                    final Timestamp lastAction = resultSet.getTimestamp("last_action");
-                    final Timestamp lastKnownAction = lastActions.get(entity);
+            while (resultSet.next()) {
+                final String entity = resultSet.getString("entity");
+                final Timestamp lastAction = resultSet.getTimestamp("last_action");
+                final Timestamp lastKnownAction = lastActions.get(entity);
 
-                    if (Objects.equals(lastAction, lastKnownAction)) {
-                        continue;
-                    }
-
-                    if (lastAction == null) {
-                        lastActions.remove(entity);
-                    } else {
-                        lastActions.put(entity, lastAction);
-                    }
-
-                    switch (entity) {
-                        case "global" -> {
-                            reloadGroups = true;
-                            reloadTokens = true;
-                        }
-                        case "groups" -> reloadGroups = true;
-                        case "tokens", "token_groups" -> reloadTokens = true;
-                    }
+                if (Objects.equals(lastAction, lastKnownAction)) {
+                    continue;
                 }
 
-                Logger logger = CraftsNetSecuritySQLDriver.getInstance().getLogger();
-                if (reloadGroups) {
-                    logger.debug("Detected group db entity change, reloading driver.");
-                    getDriver().getGroupStoreDriver().reload();
+                if (lastAction == null) {
+                    lastActions.remove(entity);
+                } else {
+                    lastActions.put(entity, lastAction);
                 }
 
-                if (reloadTokens) {
-                    logger.debug("Detected token db entity change, reloading driver.");
-                    getDriver().getTokenStoreDriver().reload();
+                switch (entity) {
+                    case "global" -> {
+                        reloadGroups = true;
+                        reloadTokens = true;
+                    }
+                    case "groups" -> reloadGroups = true;
+                    case "tokens", "token_groups" -> reloadTokens = true;
                 }
-
-                return null;
-            } catch (SQLException e) {
-                throw new RuntimeException("Failed to poll for updates", e);
             }
+
+            Logger logger = CraftsNetSecuritySQLDriver.getInstance().getLogger();
+            if (reloadGroups) {
+                logger.debug("Detected group db entity change, reloading driver.");
+                getDriver().getGroupStoreDriver().reload();
+            }
+
+            if (reloadTokens) {
+                logger.debug("Detected token db entity change, reloading driver.");
+                getDriver().getTokenStoreDriver().reload();
+            }
+
+            return null;
         });
     }
 

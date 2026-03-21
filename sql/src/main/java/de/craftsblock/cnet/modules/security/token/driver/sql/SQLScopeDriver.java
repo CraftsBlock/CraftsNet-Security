@@ -3,6 +3,7 @@ package de.craftsblock.cnet.modules.security.token.driver.sql;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Supplier;
@@ -35,19 +36,15 @@ final class SQLScopeDriver extends AbstractSQLStoreDriver {
                         String.join(",", Collections.nCopies(scopes.length, "?"))
                 ), List.of(scopes)
         ), result -> {
-            try {
-                Map<String, Long> resultScopes = new HashMap<>();
-                while (result.next()) {
-                    resultScopes.put(
-                            result.getString("value"),
-                            result.getLong("id")
-                    );
-                }
-
-                return resultScopes;
-            } catch (SQLException e) {
-                throw new RuntimeException("", e);
+            Map<String, Long> resultScopes = new HashMap<>();
+            while (result.next()) {
+                resultScopes.put(
+                        result.getString("value"),
+                        result.getLong("id")
+                );
             }
+
+            return resultScopes;
         });
     }
 

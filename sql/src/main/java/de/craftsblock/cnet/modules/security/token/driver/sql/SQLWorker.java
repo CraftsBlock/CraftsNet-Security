@@ -1,7 +1,9 @@
 package de.craftsblock.cnet.modules.security.token.driver.sql;
 
 import de.craftsblock.cnet.modules.security.CraftsNetSecurity;
+import de.craftsblock.cnet.modules.security.token.driver.sql.util.SQLFunction;
 import de.craftsblock.craftsnet.logging.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -11,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class SQLWorker {
@@ -32,11 +33,11 @@ public class SQLWorker {
         }
     }
 
-    protected final <R> R query(PreparedStatement statement, Function<ResultSet, R> resultSetRFunction) {
+    protected final <R> R query(PreparedStatement statement, SQLFunction<ResultSet, R> resultSetRFunction) {
         ensureOpen();
         try (statement) {
             try (ResultSet resultSet = statement.executeQuery()) {
-                return resultSetRFunction.apply(resultSet);
+                return resultSetRFunction.applyThrows(resultSet);
             }
         } catch (SQLException e) {
             throw new RuntimeException("Could not perform query: " + e.getMessage(), e);
@@ -68,16 +69,12 @@ public class SQLWorker {
 
     protected final <T> Collection<T> queryCollection(PreparedStatement statement, String column, Class<T> type) {
         return this.query(statement, result -> {
-            try {
-                Collection<T> values = new ArrayList<>();
-                while (result.next()) {
-                    values.add(result.getObject(column, type));
-                }
-
-                return values;
-            } catch (SQLException e) {
-                throw new RuntimeException("Could not fetch list for column " + column, e);
+            Collection<T> values = new ArrayList<>();
+            while (result.next()) {
+                values.add(result.getObject(column, type));
             }
+
+            return values;
         });
     }
 

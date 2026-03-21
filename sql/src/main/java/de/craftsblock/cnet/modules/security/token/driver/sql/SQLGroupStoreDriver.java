@@ -5,6 +5,7 @@ import de.craftsblock.cnet.modules.security.token.group.Group;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Supplier;
@@ -30,14 +31,8 @@ public final class SQLGroupStoreDriver extends AbstractSQLStoreDriver implements
         ensureOpen();
 
         return this.query(this.preparedStatement(
-                "SELECT `name` FROM `cnet_security_groups` WHERE `name`=?;", name
-        ), result -> {
-            try {
-                return result.next();
-            } catch (SQLException e) {
-                throw new RuntimeException("Could not fetch group for id " + name, e);
-            }
-        });
+                "SELECT 1 FROM `cnet_security_groups` WHERE `name` = ? LIMIT 1;", name
+        ), ResultSet::next);
     }
 
     @Override
@@ -48,15 +43,11 @@ public final class SQLGroupStoreDriver extends AbstractSQLStoreDriver implements
                 "SELECT `name` FROM `cnet_security_groups` WHERE `name` = ?;",
                 name
         ), result -> {
-            try {
-                if (result.next()) {
-                    return result.getString("name");
-                }
-
-                return null;
-            } catch (SQLException e) {
-                throw new RuntimeException("Failed to load group name: " + e.getMessage(), e);
+            if (result.next()) {
+                return result.getString("name");
             }
+
+            return null;
         });
 
         if (groupName == null) {

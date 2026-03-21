@@ -8,6 +8,8 @@ import de.craftsblock.craftsnet.utils.PassphraseUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Supplier;
@@ -33,14 +35,8 @@ public final class SQLTokenStoreDriver extends AbstractSQLStoreDriver implements
         ensureOpen();
 
         return this.query(this.preparedStatement(
-                "SELECT `id` FROM `cnet_security_tokens` WHERE `id`=?;", id
-        ), result -> {
-            try {
-                return result.next();
-            } catch (SQLException e) {
-                throw new RuntimeException("Could not fetch token for id " + id, e);
-            }
-        });
+                "SELECT 1 FROM `cnet_security_tokens` WHERE `id` = ? LIMIT 1;", id
+        ), ResultSet::next);
     }
 
     @Override
@@ -50,7 +46,6 @@ public final class SQLTokenStoreDriver extends AbstractSQLStoreDriver implements
         TokenMeta tokenMeta = this.query(this.preparedStatement(
                 "SELECT `hash`, `data_container` FROM `cnet_security_tokens` WHERE `id`=?;", id
         ), result -> {
-            try {
                 if (!result.next()) {
                     return null;
                 }
@@ -59,9 +54,6 @@ public final class SQLTokenStoreDriver extends AbstractSQLStoreDriver implements
                         result.getString("hash"),
                         result.getBytes("data_container")
                 );
-            } catch (SQLException e) {
-                throw new RuntimeException("Could not fetch token for id " + id, e);
-            }
         });
 
         if (tokenMeta == null) {

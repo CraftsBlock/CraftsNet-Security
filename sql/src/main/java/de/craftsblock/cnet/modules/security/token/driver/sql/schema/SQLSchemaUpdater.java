@@ -95,17 +95,7 @@ public class SQLSchemaUpdater extends SQLWorker {
                 FROM `information_schema`.`tables`
                 WHERE `table_schema` = DATABASE()
                   AND `table_name` = 'cnet_security_schema_history';
-                """), result -> {
-            try {
-                return result.next() && result.getInt(1) == 1;
-            } catch (SQLException e) {
-                throw new RuntimeException(
-                        "Could not check if schema version table exists: "
-                                + e.getMessage(),
-                        e
-                );
-            }
-        });
+                """), result -> result.next() && result.getInt(1) == 1);
     }
 
     public String getCurrentInstalledVersion() {
@@ -114,13 +104,7 @@ public class SQLSchemaUpdater extends SQLWorker {
                 FROM `cnet_security_schema_history`
                 WHERE `success` = true
                 ORDER BY `installed_on` DESC LIMIT 1;
-                """), result -> {
-            try {
-                return result.next() ? result.getString("version") : null;
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-        });
+                """), result -> result.next() ? result.getString("version") : null);
     }
 
 }

@@ -7,6 +7,7 @@ import de.craftsblock.cnet.modules.security.token.driver.sql.reload.SQLReloadPro
 import de.craftsblock.cnet.modules.security.token.driver.sql.schema.SQLSchemaUpdater;
 import de.craftsblock.craftsnet.logging.Logger;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.sql.Connection;
 import java.util.function.Function;
@@ -14,11 +15,13 @@ import java.util.function.Supplier;
 
 public class SQLStoreDriver extends WrappedStoreDriver<SQLGroupStoreDriver, SQLTokenStoreDriver> {
 
-    private final @NotNull Supplier<@NotNull Connection> connectionSupplier;
+    private final @NotNull Supplier<Connection> connectionSupplier;
     private final @NotNull SQLReloadProvider sqlReloadProvider;
 
     private final @NotNull SQLScopeDriver scopeDriver;
     private final @NotNull SQLSchemaUpdater schemaUpdater;
+
+    private boolean closed;
 
     SQLStoreDriver(@NotNull SQLGroupStoreDriver groupStoreDriver,
                    @NotNull SQLScopeDriver scopeDriver,
@@ -27,7 +30,16 @@ public class SQLStoreDriver extends WrappedStoreDriver<SQLGroupStoreDriver, SQLT
                    @NotNull Supplier<@NotNull Connection> connectionSupplier,
                    @NotNull Function<@NotNull SQLStoreDriver, @NotNull SQLReloadProvider> providerFactory) {
         super(groupStoreDriver, tokenStoreDriver);
-        this.connectionSupplier = connectionSupplier;
+
+        // When the store driver is close no more interactions with the underlying
+        // connection supplier should be made to prevent unnecessary reconnections
+        this.connectionSupplier = () -> {
+            if (isClosed()) {
+                return null;
+            }
+
+            return connectionSupplier.get();
+        };
 
         this.scopeDriver = scopeDriver;
         this.schemaUpdater = schemaUpdater;
@@ -50,17 +62,20 @@ public class SQLStoreDriver extends WrappedStoreDriver<SQLGroupStoreDriver, SQLT
     @Override
     public synchronized void close() {
         try {
-            if (sqlReloadProvider instanceof AutoCloseable autoCloseable) {
-                autoCloseable.close();
-            }
+            sqlReloadProvider.close();
+            super.close();
         } catch (Exception e) {
             throw new RuntimeException("Failed to close the sql reload provider: " + e.getMessage(), e);
+        } finally {
+            this.closed = true;
         }
-
-        super.close();
     }
 
-    public @NotNull Supplier<@NotNull Connection> getConnectionSupplier() {
+    public boolean isClosed() {
+        return closed;
+    }
+
+    public @NotNull Supplier<@Nullable Connection> getConnectionSupplier() {
         return connectionSupplier;
     }
 

@@ -1,12 +1,10 @@
 package de.craftsblock.cnet.modules.security.token.driver.sql.reload;
 
-import de.craftsblock.cnet.modules.security.CraftsNetSecurity;
 import de.craftsblock.cnet.modules.security.CraftsNetSecuritySQLDriver;
 import de.craftsblock.cnet.modules.security.token.driver.sql.SQLStoreDriver;
 import de.craftsblock.craftsnet.logging.Logger;
 import org.jetbrains.annotations.NotNull;
 
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,7 +13,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class SQLPollingReloadProvider extends SQLReloadProvider implements Runnable, AutoCloseable {
+public class SQLPollingReloadProvider extends SQLReloadProvider implements Runnable {
 
     private static final String SQL_UPDATE_CHECK = """
             SELECT "global" AS `entity`, MAX(`created_at`) AS `last_action`

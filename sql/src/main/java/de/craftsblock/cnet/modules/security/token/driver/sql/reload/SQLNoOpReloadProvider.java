@@ -9,4 +9,8 @@ public class SQLNoOpReloadProvider extends SQLReloadProvider {
         super(driver);
     }
 
+    @Override
+    public void close() {
+        // Do nothing to not close the sql connection
+    }
 }

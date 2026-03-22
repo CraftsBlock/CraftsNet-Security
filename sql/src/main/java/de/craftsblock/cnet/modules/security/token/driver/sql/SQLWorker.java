@@ -6,6 +6,7 @@ import de.craftsblock.cnet.modules.security.token.driver.sql.util.SQLFunction;
 import de.craftsblock.craftsnet.logging.Logger;
 import de.craftsblock.craftsnet.utils.reflection.ReflectionUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -17,11 +18,11 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
-public class SQLWorker {
+public class SQLWorker implements AutoCloseable {
 
-    private final Supplier<Connection> connectionSupplier;
+    private final @NotNull Supplier<@Nullable Connection> connectionSupplier;
 
-    public SQLWorker(Supplier<Connection> connectionSupplier) {
+    public SQLWorker(@NotNull Supplier<@Nullable Connection> connectionSupplier) {
         this.connectionSupplier = connectionSupplier;
     }
 
@@ -76,7 +77,7 @@ public class SQLWorker {
     protected final <T> PreparedStatement preparedStatementList(String sql, Collection<T> values) {
         ensureOpen();
         try {
-            Connection connection = connectionSupplier.get();
+            Connection connection = getConnection();
             PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
             AtomicInteger i = new AtomicInteger(0);
@@ -102,6 +103,7 @@ public class SQLWorker {
     }
 
     protected final boolean performScript(String name) {
+        ensureOpen();
         Logger logger = CraftsNetSecurity.getInstance().getLogger();
 
         try (InputStream file = getClass().getResourceAsStream(name)) {
@@ -110,7 +112,7 @@ public class SQLWorker {
                 return false;
             }
 
-            Connection connection = connectionSupplier.get();
+            Connection connection = getConnection();
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(file));
                  Statement statement = connection.createStatement()) {
 
@@ -153,9 +155,23 @@ public class SQLWorker {
         }
     }
 
+    @Override
+    public void close() {
+        try {
+            Connection connection = getConnection();
+            if (connection == null || connection.isClosed()) {
+                return;
+            }
+
+            connection.close();
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to close sql connection!", e);
+        }
+    }
+
     public void ensureOpen() {
         try {
-            Connection connection = connectionSupplier.get();
+            Connection connection = getConnection();
             if (connection == null || connection.isClosed()) {
                 throw new IllegalStateException("No operations allowed after underlying closure!");
             }
@@ -166,6 +182,10 @@ public class SQLWorker {
 
     public Supplier<Connection> getConnectionSupplier() {
         return connectionSupplier;
+    }
+
+    public Connection getConnection() {
+        return connectionSupplier.get();
     }
 
 }

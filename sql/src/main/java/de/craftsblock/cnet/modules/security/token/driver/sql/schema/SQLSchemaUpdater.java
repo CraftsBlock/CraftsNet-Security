@@ -8,7 +8,6 @@ import de.craftsblock.craftsnet.logging.Logger;
 import org.jetbrains.annotations.Contract;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -105,7 +104,7 @@ public class SQLSchemaUpdater extends SQLWorker {
                 SELECT `version`
                 FROM `cnet_security_schema_history`
                 WHERE `success` = true
-                ORDER BY `installed_on` DESC LIMIT 1;
+                ORDER BY `installed_on`, `id` DESC LIMIT 1;
                 """), result -> result.next() ? result.getString("version") : null);
     }
 

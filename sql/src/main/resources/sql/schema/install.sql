@@ -13,18 +13,22 @@ CREATE TABLE
 
 CREATE TABLE
     IF NOT EXISTS `cnet_security_groups` (
-        `id` bigint (20) UNSIGNED NOT NULL,
+        `id` bigint (20) UNSIGNED NOT NULL AUTO_INCREMENT,
         `name` varchar(255) NOT NULL,
         `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-        PRIMARY KEY (`name`)
+        PRIMARY KEY (`id`),
+        UNIQUE `unique_name` (`name`),
+        KEY `group_name` (`name`)
     ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
 
 CREATE TABLE
     IF NOT EXISTS `cnet_security_schema_history` (
+        `id` int (11) UNSIGNED NOT NULL AUTO_INCREMENT,
         `version` varchar(50) NOT NULL,
         `installed_on` timestamp NULL DEFAULT current_timestamp(),
         `execution_time` int (11) DEFAULT NULL,
-        `success` tinyint (1) DEFAULT NULL
+        `success` tinyint (1) DEFAULT NULL,
+        PRIMARY KEY (`id`)
     ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
 
 CREATE TABLE
@@ -33,7 +37,7 @@ CREATE TABLE
         `value` varchar(255) NOT NULL,
         `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
         PRIMARY KEY (`id`),
-        UNIQUE (`value`)
+        UNIQUE `unique_value` (`value`)
     ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
 
 CREATE TABLE
@@ -47,8 +51,8 @@ CREATE TABLE
     ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
 
 CREATE TABLE
-    `s76_7f8wLTTdbv1O`.`cnet_security_token_groups` (
-        `token_id` bigint UNSIGNED NOT NULL,
+    IF NOT EXISTS `cnet_security_token_groups` (
+        `token_id` bigint (20) UNSIGNED NOT NULL,
         `group_id` varchar(255) NOT NULL,
         `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
         PRIMARY KEY (`token_id`, `group_id`)

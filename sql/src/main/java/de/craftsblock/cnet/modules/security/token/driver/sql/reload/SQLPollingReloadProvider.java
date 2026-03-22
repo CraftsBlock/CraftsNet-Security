@@ -1,5 +1,6 @@
 package de.craftsblock.cnet.modules.security.token.driver.sql.reload;
 
+import de.craftsblock.cnet.modules.security.CraftsNetSecurity;
 import de.craftsblock.cnet.modules.security.CraftsNetSecuritySQLDriver;
 import de.craftsblock.cnet.modules.security.token.driver.sql.SQLStoreDriver;
 import de.craftsblock.craftsnet.logging.Logger;
@@ -37,6 +38,7 @@ public class SQLPollingReloadProvider extends SQLReloadProvider implements Runna
 
     private final Map<String, Timestamp> lastActions = new HashMap<>(4);
     private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+    private final CraftsNetSecuritySQLDriver craftsNetSecuritySQLDriver = CraftsNetSecuritySQLDriver.getInstance();
 
     public SQLPollingReloadProvider(@NotNull SQLStoreDriver driver) {
         this(driver, 5, 15, TimeUnit.SECONDS);
@@ -95,7 +97,7 @@ public class SQLPollingReloadProvider extends SQLReloadProvider implements Runna
 
     @Override
     public void close() {
-        final Logger logger = CraftsNetSecuritySQLDriver.getInstance().getLogger();
+        final Logger logger = craftsNetSecuritySQLDriver.getLogger();
 
         try {
             executor.shutdown();

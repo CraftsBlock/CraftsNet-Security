@@ -1,5 +1,6 @@
 package de.craftsblock.cnet.modules.security.auth;
 
+import de.craftsblock.cnet.modules.security.CraftsNetSecurity;
 import de.craftsblock.cnet.modules.security.auth.adapter.AuthAdapter;
 import de.craftsblock.cnet.modules.security.auth.exclusion.Exclusions;
 import de.craftsblock.craftsnet.api.BaseExchange;
@@ -8,6 +9,7 @@ import de.craftsblock.craftsnet.api.http.Request;
 import de.craftsblock.craftsnet.api.utils.Scheme;
 import de.craftsblock.craftsnet.api.websocket.SocketExchange;
 import de.craftsblock.craftsnet.api.websocket.WebSocketClient;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -125,6 +127,10 @@ public class AuthChain {
 
     public Exclusions getExclusions() {
         return exclusions;
+    }
+
+    public static @NotNull AuthChain getInstance() {
+        return CraftsNetSecurity.getAuthChain();
     }
 
 }

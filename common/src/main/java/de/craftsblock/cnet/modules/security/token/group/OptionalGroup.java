@@ -1,6 +1,5 @@
 package de.craftsblock.cnet.modules.security.token.group;
 
-import de.craftsblock.cnet.modules.security.CraftsNetSecurity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnmodifiableView;
@@ -37,7 +36,7 @@ public record OptionalGroup(@NotNull String name, @NotNull Optional<Group> optio
     }
 
     public static OptionalGroup fromString(String name) {
-        return of(name, CraftsNetSecurity.getGroupManager().getGroup(name));
+        return of(name, GroupManager.getInstance().getGroup(name));
     }
 
     public static Collection<OptionalGroup> fromList(Collection<String> names) {

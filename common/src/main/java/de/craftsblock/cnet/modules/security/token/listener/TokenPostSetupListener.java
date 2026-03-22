@@ -17,7 +17,7 @@ public class TokenPostSetupListener implements ListenerAdapter {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void registerFallbackDriver(AllAddonsLoadedEvent event) {
-        StoreDriver currentDriver = CraftsNetSecurity.getStoreDriver();
+        StoreDriver currentDriver = StoreDriver.getInstance();
         if (currentDriver != null) {
             return;
         }

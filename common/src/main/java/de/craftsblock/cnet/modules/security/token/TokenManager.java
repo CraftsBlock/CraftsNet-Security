@@ -1,6 +1,7 @@
 package de.craftsblock.cnet.modules.security.token;
 
 import de.craftsblock.cnet.modules.security.CraftsNetSecurity;
+import de.craftsblock.cnet.modules.security.token.driver.StoreDriver;
 import de.craftsblock.cnet.modules.security.token.driver.TokenStoreDriver;
 import de.craftsblock.cnet.modules.security.token.event.TokenCreateEvent;
 import de.craftsblock.cnet.modules.security.token.group.OptionalGroup;
@@ -10,6 +11,7 @@ import de.craftsblock.cnet.modules.security.token.util.TokenUtil;
 import de.craftsblock.craftscore.cache.Cache;
 import de.craftsblock.craftscore.utils.id.Snowflake;
 import de.craftsblock.craftsnet.utils.PassphraseUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import java.util.Collection;
@@ -29,11 +31,11 @@ public class TokenManager {
     }
 
     public void persist(Token token) {
-        CraftsNetSecurity.getStoreDriver().saveToken(token);
+        StoreDriver.getInstance().saveToken(token);
     }
 
     public void delete(Token token) {
-        CraftsNetSecurity.getStoreDriver().deleteToken(token);
+        StoreDriver.getInstance().deleteToken(token);
     }
 
     public synchronized Token getToken(long id) {
@@ -41,7 +43,7 @@ public class TokenManager {
             return tokenCache.get(id);
         }
 
-        TokenStoreDriver driver = CraftsNetSecurity.getStoreDriver();
+        TokenStoreDriver driver = StoreDriver.getInstance();
         if (!driver.existsToken(id)) {
             return null;
         }
@@ -127,6 +129,14 @@ public class TokenManager {
 
     public synchronized void removeCache(long id) {
         this.tokenCache.remove(id);
+    }
+
+    public static @NotNull TokenManager getInstance() {
+        return CraftsNetSecurity.getTokenManager();
+    }
+
+    public static void setInstance(@NotNull TokenManager tokenManager) {
+        CraftsNetSecurity.setTokenManager(tokenManager);
     }
 
 }

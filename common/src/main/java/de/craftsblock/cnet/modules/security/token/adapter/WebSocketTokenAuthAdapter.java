@@ -5,6 +5,7 @@ import de.craftsblock.cnet.modules.security.CraftsNetSecurity;
 import de.craftsblock.cnet.modules.security.auth.AuthResult;
 import de.craftsblock.cnet.modules.security.auth.adapter.AuthAdapter;
 import de.craftsblock.cnet.modules.security.token.Token;
+import de.craftsblock.cnet.modules.security.token.TokenManager;
 import de.craftsblock.cnet.modules.security.token.event.TokenUsedEvent;
 import de.craftsblock.craftscore.event.EventHandler;
 import de.craftsblock.craftscore.event.EventPriority;
@@ -92,7 +93,7 @@ public class WebSocketTokenAuthAdapter implements ListenerAdapter, AuthAdapter.W
                 return;
             }
 
-            Token token = CraftsNetSecurity.getTokenManager().getValidatedToken(json.getString("token"));
+            Token token = TokenManager.getInstance().getValidatedToken(json.getString("token"));
             if (token == null) {
                 failAuth(client, "WRONG TOKEN");
                 return;

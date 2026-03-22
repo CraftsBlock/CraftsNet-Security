@@ -6,7 +6,6 @@ import java.util.function.Supplier;
 public sealed abstract class AbstractSQLStoreDriver extends SQLWorker implements AutoCloseable
         permits SQLGroupStoreDriver, SQLScopeDriver, SQLTokenStoreDriver {
 
-
     private boolean closed = false;
 
     public AbstractSQLStoreDriver(Supplier<Connection> connectionSupplier) {

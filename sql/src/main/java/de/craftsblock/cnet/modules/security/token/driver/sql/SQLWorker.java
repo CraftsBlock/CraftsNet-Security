@@ -4,6 +4,7 @@ import de.craftsblock.cnet.modules.security.CraftsNetSecurity;
 import de.craftsblock.cnet.modules.security.token.driver.sql.util.SQLBiConsumer;
 import de.craftsblock.cnet.modules.security.token.driver.sql.util.SQLFunction;
 import de.craftsblock.craftsnet.logging.Logger;
+import de.craftsblock.craftsnet.utils.reflection.ReflectionUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
@@ -75,17 +76,15 @@ public class SQLWorker {
     protected final <T> PreparedStatement preparedStatementList(String sql, Collection<T> values) {
         ensureOpen();
         try {
-            synchronized (connectionSupplier) {
-                Connection connection = connectionSupplier.get();
-                PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            Connection connection = connectionSupplier.get();
+            PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
-                AtomicInteger i = new AtomicInteger(0);
-                for (T value : values) {
-                    statement.setObject(i.incrementAndGet(), value);
-                }
-
-                return statement;
+            AtomicInteger i = new AtomicInteger(0);
+            for (T value : values) {
+                statement.setObject(i.incrementAndGet(), value);
             }
+
+            return statement;
         } catch (SQLException e) {
             throw new RuntimeException("Could not prepare statement: " + e.getMessage(), e);
         }
@@ -111,44 +110,42 @@ public class SQLWorker {
                 return false;
             }
 
-            synchronized (connectionSupplier) {
-                Connection connection = connectionSupplier.get();
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(file));
-                     Statement statement = connection.createStatement()) {
+            Connection connection = connectionSupplier.get();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(file));
+                 Statement statement = connection.createStatement()) {
 
-                    connection.setAutoCommit(false);
+                connection.setAutoCommit(false);
 
-                    StringBuilder currentStatement = new StringBuilder();
-                    String line;
+                StringBuilder currentStatement = new StringBuilder();
+                String line;
 
-                    while ((line = reader.readLine()) != null) {
-                        line = line.trim();
+                while ((line = reader.readLine()) != null) {
+                    line = line.trim();
 
-                        if (line.isEmpty() || line.startsWith("--")) {
-                            continue;
-                        }
-
-                        currentStatement.append(line).append(" ");
-
-                        if (!line.endsWith(";")) {
-                            continue;
-                        }
-
-                        String sql = currentStatement.toString();
-                        sql = sql.substring(0, sql.lastIndexOf(";")).trim();
-
-                        if (!sql.isEmpty()) {
-                            statement.execute(sql);
-                        }
-
-                        currentStatement.setLength(0);
+                    if (line.isEmpty() || line.startsWith("--")) {
+                        continue;
                     }
 
-                    connection.commit();
-                    return true;
-                } finally {
-                    connection.setAutoCommit(true);
+                    currentStatement.append(line).append(" ");
+
+                    if (!line.endsWith(";")) {
+                        continue;
+                    }
+
+                    String sql = currentStatement.toString();
+                    sql = sql.substring(0, sql.lastIndexOf(";")).trim();
+
+                    if (!sql.isEmpty()) {
+                        statement.execute(sql);
+                    }
+
+                    currentStatement.setLength(0);
                 }
+
+                connection.commit();
+                return true;
+            } finally {
+                connection.setAutoCommit(true);
             }
         } catch (Exception e) {
             logger.error("Failed to upgrade: " + e.getMessage(), e);
@@ -158,11 +155,9 @@ public class SQLWorker {
 
     public void ensureOpen() {
         try {
-            synchronized (connectionSupplier) {
-                Connection connection = connectionSupplier.get();
-                if (connection.isClosed() || !connection.isValid(15)) {
-                    throw new IllegalStateException("No operations allowed after underlying closure!");
-                }
+            Connection connection = connectionSupplier.get();
+            if (connection == null || connection.isClosed()) {
+                throw new IllegalStateException("No operations allowed after underlying closure!");
             }
         } catch (SQLException e) {
             throw new RuntimeException("Could not check connection state: " + e.getMessage(), e);

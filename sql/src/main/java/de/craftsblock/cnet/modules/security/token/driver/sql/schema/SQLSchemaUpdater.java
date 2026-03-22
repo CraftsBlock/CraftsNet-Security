@@ -2,8 +2,8 @@ package de.craftsblock.cnet.modules.security.token.driver.sql.schema;
 
 import de.craftsblock.cnet.modules.security.CraftsNetSecurity;
 import de.craftsblock.cnet.modules.security.token.driver.sql.SQLWorker;
-import de.craftsblock.cnet.modules.security.token.driver.sql.schema.upgardes.SQLSchemaUpdate2026_03_09;
-import de.craftsblock.cnet.modules.security.token.driver.sql.schema.upgardes.SQLSchemaUpdate2026_03_21;
+import de.craftsblock.cnet.modules.security.token.driver.sql.schema.upgarde.SQLSchemaUpdate2026_03_09;
+import de.craftsblock.cnet.modules.security.token.driver.sql.schema.upgarde.SQLSchemaUpdate2026_03_21;
 import de.craftsblock.craftsnet.logging.Logger;
 import org.jetbrains.annotations.Contract;
 
@@ -104,7 +104,7 @@ public class SQLSchemaUpdater extends SQLWorker {
                 SELECT `version`
                 FROM `cnet_security_schema_history`
                 WHERE `success` = true
-                ORDER BY `installed_on`, `id` DESC LIMIT 1;
+                ORDER BY `id` DESC LIMIT 1;
                 """), result -> result.next() ? result.getString("version") : null);
     }
 

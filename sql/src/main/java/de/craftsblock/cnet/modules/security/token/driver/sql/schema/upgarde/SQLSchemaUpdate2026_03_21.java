@@ -1,4 +1,4 @@
-package de.craftsblock.cnet.modules.security.token.driver.sql.schema.upgardes;
+package de.craftsblock.cnet.modules.security.token.driver.sql.schema.upgarde;
 
 import de.craftsblock.cnet.modules.security.token.driver.sql.schema.SQLSchemaUpdater;
 import de.craftsblock.cnet.modules.security.token.driver.sql.schema.SQLSchemaUpgrade;

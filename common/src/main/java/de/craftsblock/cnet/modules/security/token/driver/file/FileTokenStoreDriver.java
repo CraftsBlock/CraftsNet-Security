@@ -35,7 +35,7 @@ public final class FileTokenStoreDriver extends AbstractFileStoreDriver implemen
         });
 
         if (token == null) {
-            throw new IllegalStateException("Token for id %s not found".formatted(id));
+            return null;
         }
 
         return Token.fromJson(token);
@@ -51,7 +51,7 @@ public final class FileTokenStoreDriver extends AbstractFileStoreDriver implemen
     }
 
     @Override
-    public void deleteToken(Token token) {
+    public void deleteToken(@NotNull Token token) {
         this.json(json -> {
             json.remove(String.valueOf(token.id()));
             json.save(file);
@@ -60,7 +60,7 @@ public final class FileTokenStoreDriver extends AbstractFileStoreDriver implemen
     }
 
     @Override
-    public Collection<Long> getAllTokenIds() {
+    public @NotNull Collection<Long> getAllTokenIds() {
         Set<String> stringIds = this.json(json -> {
             return json.keySet();
         });

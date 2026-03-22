@@ -1,28 +1,30 @@
 package de.craftsblock.cnet.modules.security.token.driver;
 
-import de.craftsblock.cnet.modules.security.CraftsNetSecurity;
 import de.craftsblock.cnet.modules.security.token.group.Group;
+import de.craftsblock.cnet.modules.security.token.group.GroupManager;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.UnmodifiableView;
 
 import java.util.Collection;
 
 public non-sealed interface GroupStoreDriver extends Driver {
 
     default void reload() {
-        CraftsNetSecurity.getGroupManager().clearCache();
+        GroupManager.getInstance().clearCache();
     }
 
-    boolean existsGroup(String name);
+    boolean existsGroup(@NotNull String name);
 
-    Group loadGroup(String name);
+    Group loadGroup(@NotNull String name);
 
-    void saveGroup(Group group);
+    void saveGroup(@NotNull Group group);
 
-    default void deleteGroup(String name) {
+    default void deleteGroup(@NotNull String name) {
         this.deleteGroup(loadGroup(name));
     }
 
-    void deleteGroup(Group group);
+    void deleteGroup(@NotNull Group group);
 
-    Collection<String> getAllGroupNames();
+    @NotNull Collection<String> getAllGroupNames();
 
 }

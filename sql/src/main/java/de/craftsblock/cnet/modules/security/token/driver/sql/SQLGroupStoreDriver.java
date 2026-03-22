@@ -27,7 +27,7 @@ public final class SQLGroupStoreDriver extends AbstractSQLStoreDriver implements
     }
 
     @Override
-    public boolean existsGroup(String name) {
+    public boolean existsGroup(@NotNull String name) {
         ensureOpen();
 
         return this.query(this.preparedStatement(
@@ -36,7 +36,7 @@ public final class SQLGroupStoreDriver extends AbstractSQLStoreDriver implements
     }
 
     @Override
-    public Group loadGroup(String name) {
+    public Group loadGroup(@NotNull String name) {
         ensureOpen();
 
         String groupName = this.query(this.preparedStatement(
@@ -62,7 +62,7 @@ public final class SQLGroupStoreDriver extends AbstractSQLStoreDriver implements
     }
 
     @Override
-    public void saveGroup(Group group) {
+    public void saveGroup(@NotNull Group group) {
         ensureOpen();
         this.update(this.preparedStatement(
                 "INSERT IGNORE INTO `cnet_security_groups` (`name`) VALUES (?)",
@@ -133,7 +133,7 @@ public final class SQLGroupStoreDriver extends AbstractSQLStoreDriver implements
     }
 
     @Override
-    public void deleteGroup(Group group) {
+    public void deleteGroup(@NotNull Group group) {
         ensureOpen();
         this.update(this.preparedStatement(
                 "DELETE FROM `cnet_security_groups` WHERE `name`=?;",
@@ -144,7 +144,7 @@ public final class SQLGroupStoreDriver extends AbstractSQLStoreDriver implements
     }
 
     @Override
-    public Collection<String> getAllGroupNames() {
+    public @NotNull Collection<String> getAllGroupNames() {
         ensureOpen();
         return this.queryCollection(this.preparedStatement(
                 "SELECT * FROM `cnet_security_groups`;"

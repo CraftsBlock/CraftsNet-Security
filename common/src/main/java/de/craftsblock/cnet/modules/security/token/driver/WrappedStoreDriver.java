@@ -2,6 +2,7 @@ package de.craftsblock.cnet.modules.security.token.driver;
 
 import de.craftsblock.cnet.modules.security.token.Token;
 import de.craftsblock.cnet.modules.security.token.group.Group;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 
@@ -16,27 +17,27 @@ public class WrappedStoreDriver<G extends GroupStoreDriver, T extends TokenStore
     }
 
     @Override
-    public boolean existsGroup(String name) {
+    public boolean existsGroup(@NotNull String name) {
         return this.groupStoreDriver.existsGroup(name);
     }
 
     @Override
-    public Group loadGroup(String name) {
+    public Group loadGroup(@NotNull String name) {
         return this.groupStoreDriver.loadGroup(name);
     }
 
     @Override
-    public void saveGroup(Group group) {
+    public void saveGroup(@NotNull Group group) {
         this.groupStoreDriver.saveGroup(group);
     }
 
     @Override
-    public void deleteGroup(Group group) {
+    public void deleteGroup(@NotNull Group group) {
         this.groupStoreDriver.deleteGroup(group);
     }
 
     @Override
-    public Collection<String> getAllGroupNames() {
+    public @NotNull Collection<String> getAllGroupNames() {
         return this.groupStoreDriver.getAllGroupNames();
     }
 
@@ -51,17 +52,17 @@ public class WrappedStoreDriver<G extends GroupStoreDriver, T extends TokenStore
     }
 
     @Override
-    public void saveToken(Token token) {
+    public void saveToken(@NotNull Token token) {
         this.tokenStoreDriver.saveToken(token);
     }
 
     @Override
-    public void deleteToken(Token token) {
+    public void deleteToken(@NotNull Token token) {
         this.tokenStoreDriver.deleteToken(token);
     }
 
     @Override
-    public Collection<Long> getAllTokenIds() {
+    public @NotNull Collection<Long> getAllTokenIds() {
         return this.tokenStoreDriver.getAllTokenIds();
     }
 

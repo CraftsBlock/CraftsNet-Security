@@ -8,9 +8,7 @@ import de.craftsblock.craftsnet.utils.PassphraseUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -100,7 +98,7 @@ public final class SQLTokenStoreDriver extends AbstractSQLStoreDriver implements
     }
 
     @Override
-    public void saveToken(Token token) {
+    public void saveToken(@NotNull Token token) {
         ensureOpen();
 
         this.update(this.preparedStatement(
@@ -161,7 +159,7 @@ public final class SQLTokenStoreDriver extends AbstractSQLStoreDriver implements
     }
 
     @Override
-    public void deleteToken(Token token) {
+    public void deleteToken(@NotNull Token token) {
         ensureOpen();
 
         this.update(this.preparedStatement(
@@ -174,7 +172,7 @@ public final class SQLTokenStoreDriver extends AbstractSQLStoreDriver implements
     }
 
     @Override
-    public Collection<Long> getAllTokenIds() {
+    public @NotNull Collection<Long> getAllTokenIds() {
         ensureOpen();
         return this.queryCollection(this.preparedStatement(
                 "SELECT `id` FROM `cnet_security_tokens`;"

@@ -4,7 +4,7 @@ plugins {
 }
 
 application {
-    mainClass = "de.craftsblock.cnet.modules.security.CNetSecuritySQLDriver"
+    mainClass = "de.craftsblock.cnet.modules.security.CraftsNetSecuritySQLDriver"
 }
 
 dependencies {

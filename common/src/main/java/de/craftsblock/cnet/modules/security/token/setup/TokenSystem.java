@@ -19,10 +19,24 @@ import java.util.EnumMap;
 
 public class TokenSystem {
 
-    private static final Object syncLock = new Object();
+    private static class Lock {
+        private static final Lock SYNC_LOCK = new Lock();
+    }
+
+    private static final EnumMap<HttpTokenAuthType, String> httpTokenLocations = new EnumMap<>(HttpTokenAuthType.class);
     private static boolean setUp = false;
 
     private TokenSystem() {
+    }
+
+    public static String setHttpTokenLocation(HttpTokenAuthType type) {
+        return setHttpTokenLocation(type, type.ensureDefaultLocation());
+    }
+
+    public static String setHttpTokenLocation(@NotNull HttpTokenAuthType type, @NotNull String location) {
+        synchronized (Lock.SYNC_LOCK) {
+            return httpTokenLocations.put(type, location);
+        }
     }
 
     public static Builder builder() {
@@ -55,23 +69,23 @@ public class TokenSystem {
 
         private final CraftsNetSecurity craftsNetSecurity;
 
-        private final EnumMap<HttpTokenAuthType, String> httpTokenLocations = new EnumMap<>(HttpTokenAuthType.class);
-
         private Builder(CraftsNetSecurity craftsNetSecurity) {
             this.craftsNetSecurity = craftsNetSecurity;
         }
 
-        public Builder addHttpTokenLocation(HttpTokenAuthType type) {
-            return this.addHttpTokenLocation(type, type.ensureDefaultLocation());
+        public Builder setHttpTokenLocation(HttpTokenAuthType type) {
+            return this.setHttpTokenLocation(type, type.ensureDefaultLocation());
         }
 
-        public Builder addHttpTokenLocation(@NotNull HttpTokenAuthType type, @NotNull String location) {
-            this.httpTokenLocations.put(type, location);
+        public Builder setHttpTokenLocation(@NotNull HttpTokenAuthType type, @NotNull String location) {
+            synchronized (Lock.SYNC_LOCK) {
+                httpTokenLocations.put(type, location);
+            }
             return this;
         }
 
         public void build() {
-            synchronized (syncLock) {
+            synchronized (Lock.SYNC_LOCK) {
                 ensureNotSetUp();
                 try {
                     ListenerRegistry listenerRegistry = craftsNetSecurity.getListenerRegistry();

@@ -3,6 +3,7 @@ package de.craftsblock.cnet.modules.security.token.group;
 import de.craftsblock.cnet.modules.security.CraftsNetSecurity;
 import de.craftsblock.cnet.modules.security.token.driver.GroupStoreDriver;
 import de.craftsblock.cnet.modules.security.token.driver.StoreDriver;
+import de.craftsblock.cnet.modules.security.token.event.cache.RevalidateGroupCacheEvent;
 import de.craftsblock.craftscore.cache.Cache;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -86,6 +87,7 @@ public class GroupManager {
 
     public synchronized void clearCache() {
         groupCache.clear();
+        CraftsNetSecurity.getInstance().getListenerRegistry().call(new RevalidateGroupCacheEvent());
     }
 
     public synchronized void removeCache(@NotNull Group group) {
@@ -93,7 +95,15 @@ public class GroupManager {
     }
 
     public synchronized void removeCache(@NotNull String name) {
-        this.groupCache.remove(name);
+        Group removed = this.groupCache.remove(name);
+        String realGroupName;
+        if (removed == null) {
+            realGroupName = name;
+        } else {
+            realGroupName = removed.name();
+        }
+
+        CraftsNetSecurity.getInstance().getListenerRegistry().call(new RevalidateGroupCacheEvent(realGroupName));
     }
 
     public static @NotNull GroupManager getInstance() {

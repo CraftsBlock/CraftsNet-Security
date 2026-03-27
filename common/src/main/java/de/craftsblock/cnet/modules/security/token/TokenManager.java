@@ -4,6 +4,7 @@ import de.craftsblock.cnet.modules.security.CraftsNetSecurity;
 import de.craftsblock.cnet.modules.security.token.driver.StoreDriver;
 import de.craftsblock.cnet.modules.security.token.driver.TokenStoreDriver;
 import de.craftsblock.cnet.modules.security.token.event.TokenCreateEvent;
+import de.craftsblock.cnet.modules.security.token.event.cache.RevalidateTokenCacheEvent;
 import de.craftsblock.cnet.modules.security.token.group.OptionalGroup;
 import de.craftsblock.cnet.modules.security.token.util.CreatedToken;
 import de.craftsblock.cnet.modules.security.token.util.TokenParts;
@@ -127,6 +128,7 @@ public class TokenManager {
 
     public synchronized void clearCache() {
         this.tokenCache.clear();
+        CraftsNetSecurity.getInstance().getListenerRegistry().call(new RevalidateTokenCacheEvent());
     }
 
     public synchronized void removeCache(Token token) {
@@ -135,6 +137,7 @@ public class TokenManager {
 
     public synchronized void removeCache(long id) {
         this.tokenCache.remove(id);
+        CraftsNetSecurity.getInstance().getListenerRegistry().call(new RevalidateTokenCacheEvent(id));
     }
 
     public static @NotNull TokenManager getInstance() {

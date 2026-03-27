@@ -23,21 +23,21 @@ public class GroupManager {
         this.groupCache = new Cache<>(cacheSize);
     }
 
-    public synchronized @NotNull Group createOrUpdateGroup(@NotNull String name, @NotNull Consumer<@NotNull Group> updater) {
+    public synchronized @NotNull Group createOrUpdate(@NotNull String name, @NotNull Consumer<@NotNull Group> updater) {
         GroupStoreDriver driver = StoreDriver.getInstance();
         if (driver.existsGroup(name)) {
-            return Objects.requireNonNull(this.updateGroup(name, updater));
+            return Objects.requireNonNull(this.update(name, updater));
         }
 
-        Group group = this.createGroup(name);
+        Group group = this.create(name);
         updater.accept(group);
         driver.saveGroup(group);
         return group;
     }
 
-    public synchronized @NotNull Group createGroup(@NotNull String name, @NotNull String @NotNull ... scopes) {
+    public synchronized @NotNull Group create(@NotNull String name, @NotNull String @NotNull ... scopes) {
         GroupStoreDriver driver = StoreDriver.getInstance();
-        Group existing = getGroup(name);
+        Group existing = get(name);
         if (existing != null) {
             return existing;
         }
@@ -48,9 +48,9 @@ public class GroupManager {
         return group;
     }
 
-    public synchronized @Nullable Group updateGroup(@NotNull String name, @NotNull Consumer<@NotNull Group> updater) {
+    public synchronized @Nullable Group update(@NotNull String name, @NotNull Consumer<@NotNull Group> updater) {
         GroupStoreDriver driver = StoreDriver.getInstance();
-        Group group = getGroup(name);
+        Group group = get(name);
         if (group == null) {
             return null;
         }
@@ -60,7 +60,7 @@ public class GroupManager {
         return group;
     }
 
-    public synchronized @Nullable Group getGroup(@NotNull String name) {
+    public synchronized @Nullable Group get(@NotNull String name) {
         if (groupCache.containsKey(name)) {
             return groupCache.get(name);
         }
@@ -75,9 +75,13 @@ public class GroupManager {
         return group;
     }
 
-    public synchronized void deleteGroup(@NotNull String name) {
+    public synchronized void delete(@NotNull Group group) {
+        this.delete(group.name());
+    }
+
+    public synchronized void delete(@NotNull String name) {
         StoreDriver.getInstance().deleteGroup(name);
-        groupCache.remove(name);
+        removeCache(name);
     }
 
     public synchronized void clearCache() {

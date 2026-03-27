@@ -3,7 +3,6 @@ package de.craftsblock.cnet.modules.security.token.driver;
 import de.craftsblock.cnet.modules.security.token.group.Group;
 import de.craftsblock.cnet.modules.security.token.group.GroupManager;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.UnmodifiableView;
 
 import java.util.Collection;
 

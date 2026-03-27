@@ -93,7 +93,7 @@ public class WebSocketTokenAuthAdapter implements ListenerAdapter, AuthAdapter.W
                 return;
             }
 
-            Token token = TokenManager.getInstance().getValidatedToken(json.getString("token"));
+            Token token = TokenManager.getInstance().getValidated(json.getString("token"));
             if (token == null) {
                 failAuth(client, "WRONG TOKEN");
                 return;

@@ -5,7 +5,7 @@ import de.craftsblock.cnet.modules.security.token.driver.StoreDriver;
 import de.craftsblock.cnet.modules.security.token.driver.TokenStoreDriver;
 import de.craftsblock.cnet.modules.security.token.event.TokenCreateEvent;
 import de.craftsblock.cnet.modules.security.token.group.OptionalGroup;
-import de.craftsblock.cnet.modules.security.token.util.NewToken;
+import de.craftsblock.cnet.modules.security.token.util.CreatedToken;
 import de.craftsblock.cnet.modules.security.token.util.TokenParts;
 import de.craftsblock.cnet.modules.security.token.util.TokenUtil;
 import de.craftsblock.craftscore.cache.Cache;
@@ -30,15 +30,21 @@ public class TokenManager {
         this.tokenCache = new Cache<>(cacheSize);
     }
 
-    public void persist(Token token) {
+    public synchronized void persist(Token token) {
         StoreDriver.getInstance().saveToken(token);
+        tokenCache.put(token.id(), token);
     }
 
-    public void delete(Token token) {
-        StoreDriver.getInstance().deleteToken(token);
+    public synchronized void delete(Token token) {
+        this.delete(token.id());
     }
 
-    public synchronized Token getToken(long id) {
+    public synchronized void delete(long id) {
+        StoreDriver.getInstance().deleteToken(id);
+        removeCache(id);
+    }
+
+    public synchronized Token get(long id) {
         if (tokenCache.containsKey(id)) {
             return tokenCache.get(id);
         }
@@ -53,14 +59,14 @@ public class TokenManager {
         return token;
     }
 
-    public synchronized Token getValidatedToken(String token) {
+    public synchronized Token getValidated(String token) {
         TokenParts parts = TokenUtil.splitToTokenParts(token);
         if (parts == null) {
             return null;
         }
 
         try {
-            Token realToken = getToken(parts.id());
+            Token realToken = get(parts.id());
             if (realToken == null || !realToken.validate(parts.secret())) {
                 return null;
             }
@@ -71,37 +77,37 @@ public class TokenManager {
         }
     }
 
-    public synchronized NewToken newPersistedToken(String... scopes) {
-        return this.newPersistedToken(List.of(scopes), Collections.emptyList());
+    public synchronized CreatedToken createPersisted(String... scopes) {
+        return this.createPersisted(List.of(scopes), Collections.emptyList());
     }
 
-    public synchronized NewToken newPersistedToken(String[] scopes, String... groups) {
-        return this.newPersistedToken(List.of(scopes), List.of(groups));
+    public synchronized CreatedToken createPersisted(String[] scopes, String... groups) {
+        return this.createPersisted(List.of(scopes), List.of(groups));
     }
 
-    public synchronized NewToken newPersistedToken(Collection<String> scopes, String... groups) {
-        return this.newPersistedToken(scopes, List.of(groups));
+    public synchronized CreatedToken createPersisted(Collection<String> scopes, String... groups) {
+        return this.createPersisted(scopes, List.of(groups));
     }
 
-    public synchronized NewToken newPersistedToken(Collection<String> scopes, Collection<String> groups) {
-        NewToken newToken = newToken(scopes, groups);
-        persist(newToken.token());
-        return newToken;
+    public synchronized CreatedToken createPersisted(Collection<String> scopes, Collection<String> groups) {
+        CreatedToken createdToken = create(scopes, groups);
+        persist(createdToken.token());
+        return createdToken;
     }
 
-    public NewToken newToken(String... scopes) {
-        return this.newToken(List.of(scopes));
+    public CreatedToken create(String... scopes) {
+        return this.create(List.of(scopes));
     }
 
-    public NewToken newToken(String[] scopes, String... groups) {
-        return this.newToken(List.of(scopes), List.of(groups));
+    public CreatedToken create(String[] scopes, String... groups) {
+        return this.create(List.of(scopes), List.of(groups));
     }
 
-    public NewToken newToken(Collection<String> scopes, String... groups) {
-        return this.newToken(scopes, List.of(groups));
+    public CreatedToken create(Collection<String> scopes, String... groups) {
+        return this.create(scopes, List.of(groups));
     }
 
-    public NewToken newToken(Collection<String> scopes, Collection<String> groups) {
+    public CreatedToken create(Collection<String> scopes, Collection<String> groups) {
         long id = Snowflake.generate();
         byte[] secret = TokenUtil.newSecureSecret();
         String secretHash = BCrypt.hashpw(secret, BCrypt.gensalt());
@@ -110,7 +116,7 @@ public class TokenManager {
             Token token = new Token(id, secretHash, scopes, OptionalGroup.fromList(groups),
                     new TokenDataContainer());
             CraftsNetSecurity.getInstance().getListenerRegistry().call(new TokenCreateEvent(token));
-            return new NewToken(
+            return new CreatedToken(
                     token,
                     TokenUtil.mergeTokenParts(id, secret)
             );

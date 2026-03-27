@@ -36,7 +36,7 @@ public record OptionalGroup(@NotNull String name, @NotNull Optional<Group> optio
     }
 
     public static OptionalGroup fromString(String name) {
-        return of(name, GroupManager.getInstance().getGroup(name));
+        return of(name, GroupManager.getInstance().get(name));
     }
 
     public static Collection<OptionalGroup> fromList(Collection<String> names) {

@@ -81,7 +81,7 @@ public class HttpTokenAuthAdapter implements AuthAdapter.Http {
             return AuthResult.skip();
         }
 
-        Token token = TokenManager.getInstance().getValidatedToken(plainToken);
+        Token token = TokenManager.getInstance().getValidated(plainToken);
         if (token == null) {
             return AuthResult.failure("Not allowed! 2");
         }

@@ -6,11 +6,10 @@ import de.craftsblock.cnet.modules.security.token.adapter.HttpTokenAuthAdapter;
 import de.craftsblock.cnet.modules.security.token.adapter.HttpTokenAuthType;
 import de.craftsblock.cnet.modules.security.token.adapter.WebSocketTokenAuthAdapter;
 import de.craftsblock.cnet.modules.security.token.group.GroupRequirement;
-import de.craftsblock.cnet.modules.security.token.group.OptionalGroup;
+import de.craftsblock.cnet.modules.security.token.group.GroupResolveMiddleware;
 import de.craftsblock.cnet.modules.security.token.scope.ScopeRequirement;
 import de.craftsblock.cnet.modules.security.token.scope.ScopeResolveMiddleware;
 import de.craftsblock.craftscore.event.ListenerRegistry;
-import de.craftsblock.craftsnet.CraftsNet;
 import de.craftsblock.craftsnet.addon.loaders.CraftsNetClassLoader;
 import de.craftsblock.craftsnet.api.requirements.RequirementRegistry;
 import org.jetbrains.annotations.NotNull;
@@ -75,6 +74,7 @@ public class TokenSystem {
                 ensureNotSetUp();
                 try {
                     ListenerRegistry listenerRegistry = craftsNetSecurity.getListenerRegistry();
+                    listenerRegistry.register(new GroupResolveMiddleware());
                     listenerRegistry.register(new ScopeResolveMiddleware());
                     listenerRegistry.register(new WebSocketTokenAuthAdapter());
 

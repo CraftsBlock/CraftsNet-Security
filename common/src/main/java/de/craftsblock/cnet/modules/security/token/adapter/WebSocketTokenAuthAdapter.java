@@ -12,6 +12,7 @@ import de.craftsblock.craftscore.event.EventPriority;
 import de.craftsblock.craftscore.event.ListenerAdapter;
 import de.craftsblock.craftscore.json.Json;
 import de.craftsblock.craftscore.json.JsonParser;
+import de.craftsblock.craftsnet.api.http.HttpStatus;
 import de.craftsblock.craftsnet.api.utils.Context;
 import de.craftsblock.craftsnet.api.websocket.ClosureCode;
 import de.craftsblock.craftsnet.api.websocket.Opcode;
@@ -35,7 +36,7 @@ public class WebSocketTokenAuthAdapter implements ListenerAdapter, AuthAdapter.W
     private static final @NotNull String MESSAGE_LITERAL_WRONG_AUTH = "Not allowed!";
     private static final @NotNull Json MESSAGE_WRONG_AUTH = Json.empty()
             .set("success", false)
-            .set("error.code", 400)
+            .set("error.code", HttpStatus.ClientError.BAD_REQUEST.getCode())
             .set("error.message", MESSAGE_LITERAL_WRONG_AUTH);
 
     private static final @NotNull Map<Long, Collection<WebSocketClient>> AUTHENTICATED_CLIENTS = new ConcurrentHashMap<>();

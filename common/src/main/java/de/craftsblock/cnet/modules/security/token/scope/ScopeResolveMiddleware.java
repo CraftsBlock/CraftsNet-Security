@@ -17,6 +17,7 @@ import de.craftsblock.craftsnet.events.requests.routes.RouteRequestEvent;
 import de.craftsblock.craftsnet.events.sockets.message.IncomingSocketMessageEvent;
 import org.jetbrains.annotations.ApiStatus;
 
+import java.util.Collections;
 import java.util.function.Consumer;
 
 @ApiStatus.Internal
@@ -24,7 +25,7 @@ public class ScopeResolveMiddleware implements ListenerAdapter {
 
     private final Json MISSING_SCOPES_MESSAGE = Json.empty()
             .set("success", false)
-            .set("error.code", 400)
+            .set("error.code", HttpStatus.ClientError.BAD_REQUEST.getCode())
             .set("error.message", "Not allowed!");
 
     private <T> void handle(BaseExchange exchange, CancellableEvent event, T subject, Consumer<T> onFailure) {

@@ -79,13 +79,19 @@ public class SQLPollingReloadProvider extends SQLReloadProvider implements Runna
             }
 
             Logger logger = CraftsNetSecuritySQLDriver.getInstance().getLogger();
+            if (reloadGroups && reloadTokens) {
+                logger.debug("Detected db change, reloading full driver.");
+                getDriver().reload();
+                return null;
+            }
+
             if (reloadGroups) {
-                logger.debug("Detected group db entity change, reloading driver.");
+                logger.debug("Detected db group entity change, reloading group driver.");
                 getDriver().getGroupStoreDriver().reload();
             }
 
             if (reloadTokens) {
-                logger.debug("Detected token db entity change, reloading driver.");
+                logger.debug("Detected db token entity change, reloading token driver.");
                 getDriver().getTokenStoreDriver().reload();
             }
 

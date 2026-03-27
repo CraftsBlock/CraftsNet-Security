@@ -9,9 +9,11 @@ import de.craftsblock.craftscore.event.ListenerAdapter;
 import de.craftsblock.craftsnet.addon.meta.Startup;
 import de.craftsblock.craftsnet.autoregister.meta.AutoRegister;
 import de.craftsblock.craftsnet.events.addons.AllAddonsLoadedEvent;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.nio.file.Path;
 
+@ApiStatus.Internal
 @AutoRegister(startup = Startup.LOAD)
 public class TokenPostSetupListener implements ListenerAdapter {
 

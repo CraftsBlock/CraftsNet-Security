@@ -17,6 +17,7 @@ import de.craftsblock.craftsnet.events.requests.routes.RouteRequestEvent;
 import de.craftsblock.craftsnet.events.sockets.message.IncomingSocketMessageEvent;
 import org.jetbrains.annotations.ApiStatus;
 
+import java.util.Collections;
 import java.util.function.Consumer;
 
 @ApiStatus.Internal
@@ -46,6 +47,8 @@ public class GroupResolveMiddleware implements ListenerAdapter {
         final Token token = context.getTyped(Token.class);
         final GroupRequest result = context.getTyped(GroupRequest.class);
         if (token.groupNames().containsAll(result.groups())) {
+            context.remove(GroupRequest.class);
+            context.put(new UsedGroups(Collections.unmodifiableList(result.groups())));
             return;
         }
 

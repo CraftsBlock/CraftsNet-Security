@@ -46,6 +46,8 @@ public class ScopeResolveMiddleware implements ListenerAdapter {
         final Token token = context.getTyped(Token.class);
         final ScopeRequest result = context.getTyped(ScopeRequest.class);
         if (token.scopes().containsAll(result.scopes())) {
+            context.remove(ScopeRequest.class);
+            context.put(new UsedScopes(Collections.unmodifiableList(result.scopes())));
             return;
         }
 

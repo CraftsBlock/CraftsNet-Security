@@ -1,12 +1,15 @@
 {
-  "name": "CraftsNetSecurity",
-  "main": "de.craftsblock.cnet.modules.security.CraftsNetSecurity",
-  "description": "Protect your craftsnet api with easy drop in security features.",
+  "name": "CraftsNetSecurityToken",
+  "main": "de.craftsblock.cnet.modules.security.token.CraftsNetSecurityToken",
+  "description": "Protect your api with an permission based token system.",
   "website": "https://craftsblock.de",
   "version": "1.0.0",
   "authors": [
     "Philipp Maywald",
     "CraftsBlock"
+  ],
+  "depends": [
+    "CraftsNetSecurity"
   ],
   "repositories": [
     "https://repo.craftsblock.de/releases"

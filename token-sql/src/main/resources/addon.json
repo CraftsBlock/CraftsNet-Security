@@ -1,0 +1,22 @@
+{
+  "name": "CraftsNetSecurityTokenSQLDriver",
+  "main": "de.craftsblock.cnet.modules.security.token.CraftsNetSecurityTokenSQLDriver",
+  "version": "1.0.0",
+  "description": "A sql driver for craftsnet security",
+  "website": "https://craftsnet.de",
+  "author": [
+    "Philipp Maywald",
+    "CraftsBlock"
+  ],
+  "depends": [
+    "CraftsNetSecurity",
+    "CraftsNetSecurityToken"
+  ],
+  "repositories": [
+    "https://repo.craftsblock.de/releases",
+    "https://repo.craftsblock.de/experimental"
+  ],
+  "dependencies": [
+    "de.craftsblock.craftscore:sql:3.8.13-pre9"
+  ]
+}

@@ -47,6 +47,22 @@ public class AuthChain {
         });
     }
 
+    public boolean isHttpAdapterRegistered(AuthAdapter.Http http) {
+        if (!adapters.containsKey(Scheme.HTTP)) {
+            return false;
+        }
+
+        return adapters.get(Scheme.HTTP).contains(http);
+    }
+
+    public boolean isWebSocketAdapterRegistered(AuthAdapter.WebSocket webSocket) {
+        if (!adapters.containsKey(Scheme.WS)) {
+            return false;
+        }
+
+        return adapters.get(Scheme.WS).contains(webSocket);
+    }
+
     public AuthResult authenticate(BaseExchange exchange) {
         if (exchange instanceof Exchange http) {
             return authenticateHttp(http);

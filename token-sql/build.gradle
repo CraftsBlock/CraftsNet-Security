@@ -1,0 +1,16 @@
+plugins {
+    id "java"
+    id "application"
+}
+
+application {
+    mainClass = "de.craftsblock.cnet.modules.security.CraftsNetSecuritySQLDriver"
+}
+
+dependencies {
+    implementation project(":common")
+    implementation project(":token")
+
+    // https://repo.craftsblock.de/#/releases/de/craftsblock/craftscore/sql
+    implementation "de.craftsblock.craftscore:sql"
+}

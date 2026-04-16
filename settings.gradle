@@ -10,6 +10,7 @@ pluginManagement {
 rootProject.name = 'Security'
 
 
-include 'sql'
-include 'common'
 include 'bom'
+include 'common'
+include 'token'
+include 'token-sql'

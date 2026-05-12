@@ -18,7 +18,7 @@ import java.nio.file.Path;
 @AutoRegister(startup = Startup.LOAD)
 public class TokenPostSetupListener implements ListenerAdapter {
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.LOW)
     public void registerFallbackDriver(AllAddonsLoadedEvent event) {
         StoreDriver currentDriver = StoreDriver.getInstance();
         if (currentDriver != null) {

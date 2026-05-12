@@ -2,14 +2,10 @@ package de.craftsblock.cnet.modules.security;
 
 import de.craftsblock.cnet.modules.security.auth.AuthChain;
 import de.craftsblock.cnet.modules.security.auth.autoregister.AuthChainAutoRegisterHandler;
-import de.craftsblock.craftsnet.CraftsNet;
 import de.craftsblock.craftsnet.addon.Addon;
 import de.craftsblock.craftsnet.addon.meta.annotations.Meta;
-import de.craftsblock.craftsnet.api.http.HttpMethod;
 import de.craftsblock.craftsnet.autoregister.AutoRegisterRegistry;
 import org.jetbrains.annotations.NotNull;
-
-import java.io.IOException;
 
 @Meta(name = "CraftsNetSecurity")
 public final class CraftsNetSecurity extends Addon {
@@ -17,12 +13,6 @@ public final class CraftsNetSecurity extends Addon {
     public static final String VERSION = "1.0.0-pre1";
 
     private AuthChain authChain;
-
-    public static void main(String[] args) throws IOException {
-        CraftsNet.create(CraftsNetSecurity.class)
-                .withArgs(args)
-                .build();
-    }
 
     @Override
     public void onLoad() {

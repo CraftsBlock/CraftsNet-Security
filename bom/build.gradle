@@ -18,34 +18,4 @@ gradle.projectsEvaluated {
     }
 }
 
-craftsPublish {
-    artifactId = project.name
-    name = "CraftsNet Security ${project.name}"
-
-    component = project.components.javaPlatform
-
-    pom {
-        name = project.name
-        description = project.description
-
-        scm {
-            url = 'https://github.com/CraftsBlock/CraftsNet-Security'
-            connection = 'scm:git:git://github.com/CraftsBlock/CraftsNet-Security.git'
-            developerConnection = 'scm:git:git@github.com:CraftsBlock/CraftsNet-Security.git'
-        }
-
-        issueManagement {
-            system = 'github'
-            url = 'https://github.com/CraftsBlock/CraftsNet-Security/issues'
-        }
-
-        licenses {
-            license {
-                name = 'GNU General Public License v3.0'
-                url = 'https://github.com/CraftsBlock/CraftsNet-Security/blob/master/LICENSE'
-            }
-        }
-    }
-}
-
 description = "Bill-of-Materials for craftsnet security"

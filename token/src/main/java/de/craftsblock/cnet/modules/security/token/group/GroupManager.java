@@ -31,21 +31,27 @@ public class GroupManager {
             return Objects.requireNonNull(this.update(name, updater));
         }
 
-        Group group = this.create(name);
+        Group group = this.createNotSaved(name);
         updater.accept(group);
         driver.saveGroup(group);
         return group;
     }
 
     public synchronized @NotNull Group create(@NotNull String name, @NotNull String @NotNull ... scopes) {
+        Group group = createNotSaved(name, scopes);
         GroupStoreDriver driver = StoreDriver.getInstance();
+
+        driver.saveGroup(group);
+        return group;
+    }
+
+    private synchronized @NotNull Group createNotSaved(@NotNull String name, @NotNull String @NotNull ... scopes) {
         Group existing = get(name);
         if (existing != null) {
             return existing;
         }
 
         Group group = new Group(name, Arrays.asList(scopes));
-        driver.saveGroup(group);
         groupCache.put(name, group);
         return group;
     }

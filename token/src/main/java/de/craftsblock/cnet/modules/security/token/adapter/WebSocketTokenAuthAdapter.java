@@ -95,12 +95,12 @@ public class WebSocketTokenAuthAdapter implements ListenerAdapter, AuthAdapter.W
         try {
             String message = event.getUtf8();
             Json json = JsonParser.parse(message);
-            if (!json.contains("de/craftsblock/cnet/modules/security/token")) {
+            if (!json.contains("token")) {
                 failAuth(client, "NO TOKEN");
                 return;
             }
 
-            Token token = TokenManager.getInstance().getValidated(json.getString("de/craftsblock/cnet/modules/security/token"));
+            Token token = TokenManager.getInstance().getValidated(json.getString("token"));
             if (token == null) {
                 failAuth(client, "WRONG TOKEN");
                 return;

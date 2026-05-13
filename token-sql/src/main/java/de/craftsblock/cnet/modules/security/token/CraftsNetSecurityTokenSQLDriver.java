@@ -18,6 +18,8 @@ import de.craftsblock.craftsnet.addon.meta.annotations.Meta;
  *
  * @author Philipp Maywald
  * @author CraftsBlock
+ * @see CraftsNetSecurity
+ * @see CraftsNetSecurityToken
  * @since 1.0.0
  */
 @Meta(name = "CraftsNetSecurityTokenSQLDriver")

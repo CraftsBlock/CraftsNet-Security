@@ -14,6 +14,23 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.EnumMap;
 
+/**
+ * Security token addon for the CraftsNet security module.
+ * <p>
+ * This addon extends the base authentication system with a
+ * token-based authentication layer. It provides support for
+ * scoped and group-based tokens as well as persistent storage
+ * through pluggable store drivers.
+ * <p>
+ * The module integrates directly into the global {@link AuthChain}
+ * by registering an {@link HttpTokenAuthAdapter}, which validates
+ * incoming HTTP requests based on configured token locations.
+ *
+ * @author Philipp Maywald
+ * @author CraftsBlock
+ * @see CraftsNetSecurity
+ * @since 1.0.0
+ */
 @Meta(name = "CraftsNetSecurityToken")
 @Depends(CraftsNetSecurity.class)
 public class CraftsNetSecurityToken extends Addon {

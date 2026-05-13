@@ -40,6 +40,24 @@ public sealed interface Exclusion permits Exclusion.HttpExclusion, Exclusion.Web
     Pattern path();
 
     /**
+     * Sanitizes the path for usage in the exclusion. This also
+     * converts the path to a pattern.
+     *
+     * @param path The path to sanitize.
+     * @return The sanitized path pattern.
+     */
+    static Pattern sanitizePattern(@RegExp String path) {
+        String sanitized = path.trim()
+                .replaceAll("//+", "/")
+                .replaceAll("/$", "/?");
+        if (!sanitized.startsWith("/")) {
+            return Pattern.compile("/" + sanitized);
+        }
+
+        return Pattern.compile(sanitized);
+    }
+
+    /**
      * Represents an HTTP-specific exclusion rule that additionally
      * restricts the exclusion to specific HTTP methods.
      * <p>
@@ -60,7 +78,7 @@ public sealed interface Exclusion permits Exclusion.HttpExclusion, Exclusion.Web
          * @param methods The HTTP methods to exclude from authentication.
          */
         public HttpExclusion(@RegExp String path, HttpMethod... methods) {
-            this(Scheme.HTTP, Pattern.compile(path), new HashSet<>(Arrays.asList(HttpMethod.normalize(methods))));
+            this(Scheme.HTTP, sanitizePattern(path), new HashSet<>(Arrays.asList(HttpMethod.normalize(methods))));
         }
 
     }
@@ -82,7 +100,7 @@ public sealed interface Exclusion permits Exclusion.HttpExclusion, Exclusion.Web
          * @param path The regex pattern used to match websocket paths.
          */
         public WebSocketExclusion(@RegExp String path) {
-            this(Scheme.WS, Pattern.compile(path));
+            this(Scheme.WS, sanitizePattern(path));
         }
 
     }

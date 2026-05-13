@@ -12,14 +12,42 @@ import java.sql.ResultSet;
 import java.util.*;
 import java.util.function.Supplier;
 
+/**
+ * SQL-based implementation of {@link TokenStoreDriver}.
+ * <p>
+ * This driver persists and loads {@link Token} instances using a relational
+ * database backend. Token metadata, scopes, groups and serialized data
+ * containers are distributed across multiple normalized tables.
+ * <p>
+ * The implementation also manages token-to-scope and token-to-group
+ * relationships and integrates with {@link SQLScopeDriver} to ensure
+ * consistent scope persistence and cleanup.
+ *
+ * @author Philipp Maywald
+ * @author CraftsBlock
+ * @since 1.0.0
+ */
 public final class SQLTokenStoreDriver extends AbstractSQLStoreDriver implements TokenStoreDriver {
 
     private SQLStoreDriver storeDriver;
 
+    /**
+     * Creates a new SQL token store driver.
+     *
+     * @param connectionSupplier Supplier used to provide SQL connections
+     */
     SQLTokenStoreDriver(Supplier<Connection> connectionSupplier) {
         super(connectionSupplier);
     }
 
+    /**
+     * Sets the owning {@link SQLStoreDriver} instance.
+     * <p>
+     * This reference is required to access shared SQL utilities such as the
+     * {@link SQLScopeDriver}. The reference can only be assigned once.
+     *
+     * @param storeDriver The parent SQL store driver
+     */
     void setStoreDriver(@NotNull SQLStoreDriver storeDriver) {
         if (this.storeDriver != null) {
             return;
@@ -28,6 +56,12 @@ public final class SQLTokenStoreDriver extends AbstractSQLStoreDriver implements
         this.storeDriver = storeDriver;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param id {@inheritDoc}
+     * @return {@inheritDoc}
+     */
     @Override
     public boolean existsToken(long id) {
         ensureOpen();
@@ -37,6 +71,12 @@ public final class SQLTokenStoreDriver extends AbstractSQLStoreDriver implements
         ), ResultSet::next);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param id {@inheritDoc}
+     * @return {@inheritDoc}
+     */
     @Override
     public Token loadToken(final long id) {
         ensureOpen();
@@ -97,6 +137,11 @@ public final class SQLTokenStoreDriver extends AbstractSQLStoreDriver implements
         });
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param token {@inheritDoc}
+     */
     @Override
     public void saveToken(@NotNull Token token) {
         ensureOpen();
@@ -116,6 +161,14 @@ public final class SQLTokenStoreDriver extends AbstractSQLStoreDriver implements
         TokenStoreDriver.super.saveToken(token);
     }
 
+    /**
+     * Persists all directly assigned scopes of the given token.
+     * <p>
+     * Missing scopes are automatically created before relations are inserted
+     * into the entity scope mapping table.
+     *
+     * @param token The token whose scopes should be persisted
+     */
     private void persistScopes(Token token) {
         if (token.directScopes().isEmpty()) {
             return;
@@ -141,6 +194,11 @@ public final class SQLTokenStoreDriver extends AbstractSQLStoreDriver implements
         );
     }
 
+    /**
+     * Persists all group relations of the given token.
+     *
+     * @param token The token whose groups should be linked
+     */
     private void persistGroups(Token token) {
         if (token.groupNames().isEmpty()) {
             return;
@@ -158,6 +216,11 @@ public final class SQLTokenStoreDriver extends AbstractSQLStoreDriver implements
         );
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param token {@inheritDoc}
+     */
     @Override
     public void deleteToken(@NotNull Token token) {
         ensureOpen();
@@ -171,20 +234,17 @@ public final class SQLTokenStoreDriver extends AbstractSQLStoreDriver implements
         TokenStoreDriver.super.deleteToken(token);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
     @Override
     public @NotNull Collection<Long> getAllTokenIds() {
         ensureOpen();
         return this.queryCollection(this.preparedStatement(
                 "SELECT `id` FROM `cnet_security_tokens`;"
         ), "id", Long.class);
-    }
-
-    private record TokenMeta(String hash, byte[] data) {
-
-        public void erase() {
-            PassphraseUtils.erase(data);
-        }
-
     }
 
 }

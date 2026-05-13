@@ -6,15 +6,41 @@ import java.sql.Connection;
 import java.util.*;
 import java.util.function.Supplier;
 
+/**
+ * Internal SQL helper responsible for persisting and managing scopes.
+ * <p>
+ * This driver acts as a shared utility component for token and group
+ * persistence layers. It ensures that scopes are normalized and stored
+ * centrally inside the {@code cnet_security_scopes} table.
+ * <p>
+ * This class is intended for internal use only and is managed by
+ * {@link SQLStoreDriver}.
+ *
+ * @author Philipp Maywald
+ * @author CraftsBlock
+ * @since 1.0.0
+ */
 final class SQLScopeDriver extends AbstractSQLStoreDriver {
 
     private SQLStoreDriver storeDriver;
 
+    /**
+     * Creates a new SQL scope driver.
+     *
+     * @param connectionSupplier Supplier providing JDBC connections
+     */
     public SQLScopeDriver(Supplier<Connection> connectionSupplier) {
         super(connectionSupplier);
     }
 
-    public void setStoreDriver(@NotNull SQLStoreDriver storeDriver) {
+    /**
+     * Assigns the owning {@link SQLStoreDriver} instance to this scope driver.
+     * <p>
+     * The assignment only occurs once. Additional calls are ignored.
+     *
+     * @param storeDriver The parent SQL store driver
+     */
+    void setStoreDriver(@NotNull SQLStoreDriver storeDriver) {
         if (this.storeDriver != null) {
             return;
         }
@@ -22,6 +48,16 @@ final class SQLScopeDriver extends AbstractSQLStoreDriver {
         this.storeDriver = storeDriver;
     }
 
+    /**
+     * Persists the given scopes and resolves their database identifiers.
+     * <p>
+     * Existing scopes are reused while missing scopes are automatically inserted.
+     * The returned map contains each scope string associated with its internal
+     * database ID.
+     *
+     * @param scopes Scopes to persist or resolve
+     * @return Map containing scope names mapped to their database identifiers
+     */
     public Map<String, Long> saveScopes(String... scopes) {
         this.updateBatch(
                 this.preparedStatement("INSERT IGNORE INTO `cnet_security_scopes` (`value`) VALUES (?);"),
@@ -46,6 +82,12 @@ final class SQLScopeDriver extends AbstractSQLStoreDriver {
         });
     }
 
+    /**
+     * Removes unused scopes from the database.
+     * <p>
+     * A scope is considered unused if it is no longer referenced by any
+     * token or group relation table.
+     */
     public void cleanUpScopes() {
         Collection<String> unusedScopes = this.queryCollection(this.preparedStatement(
                 """

@@ -9,14 +9,43 @@ import java.sql.ResultSet;
 import java.util.*;
 import java.util.function.Supplier;
 
+/**
+ * SQL-backed implementation of {@link GroupStoreDriver}.
+ * <p>
+ * This driver persists and loads token groups from a relational database.
+ * Groups are stored in the {@code cnet_security_groups} table while their
+ * associated scopes are managed through relational mapping tables.
+ * <p>
+ * Scope persistence and cleanup are delegated to the associated
+ * {@link SQLScopeDriver} provided by the owning {@link SQLStoreDriver}.
+ *
+ * @author Philipp Maywald
+ * @author CraftsBlock
+ * @see GroupStoreDriver
+ * @see SQLStoreDriver
+ * @since 1.0.0
+ */
 public final class SQLGroupStoreDriver extends AbstractSQLStoreDriver implements GroupStoreDriver {
 
     private SQLStoreDriver storeDriver;
 
+    /**
+     * Creates a new SQL group store driver.
+     *
+     * @param connectionSupplier Supplier providing JDBC connections
+     */
     SQLGroupStoreDriver(Supplier<Connection> connectionSupplier) {
         super(connectionSupplier);
     }
 
+    /**
+     * Assigns the owning {@link SQLStoreDriver} instance to this driver.
+     * <p>
+     * The store driver is only assigned once and subsequent calls are ignored.
+     * It is required for resolving and cleaning up scope relations.
+     *
+     * @param storeDriver The owning SQL store driver
+     */
     void setStoreDriver(@NotNull SQLStoreDriver storeDriver) {
         if (this.storeDriver != null) {
             return;
@@ -25,6 +54,12 @@ public final class SQLGroupStoreDriver extends AbstractSQLStoreDriver implements
         this.storeDriver = storeDriver;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param name {@inheritDoc}
+     * @return {@inheritDoc}
+     */
     @Override
     public boolean existsGroup(@NotNull String name) {
         ensureOpen();
@@ -34,6 +69,12 @@ public final class SQLGroupStoreDriver extends AbstractSQLStoreDriver implements
         ), ResultSet::next);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param name {@inheritDoc}
+     * @return {@inheritDoc}
+     */
     @Override
     public Group loadGroup(@NotNull String name) {
         ensureOpen();
@@ -72,6 +113,11 @@ public final class SQLGroupStoreDriver extends AbstractSQLStoreDriver implements
         });
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param group {@inheritDoc}
+     */
     @Override
     public void saveGroup(@NotNull Group group) {
         ensureOpen();
@@ -89,6 +135,12 @@ public final class SQLGroupStoreDriver extends AbstractSQLStoreDriver implements
         this.storeDriver.getScopeDriver().cleanUpScopes();
     }
 
+    /**
+     * Persists all scopes associated with the given group and creates
+     * the required relational mappings.
+     *
+     * @param group The group whose scopes should be persisted
+     */
     private void persistScopes(Group group) {
         if (group.scopes().isEmpty()) {
             return;
@@ -114,6 +166,14 @@ public final class SQLGroupStoreDriver extends AbstractSQLStoreDriver implements
         );
     }
 
+    /**
+     * Removes outdated scope mappings from the database.
+     * <p>
+     * Any scope relation that is currently stored for the group but is no longer
+     * part of the group's active scope collection will be deleted.
+     *
+     * @param group The group whose obsolete scope mappings should be removed
+     */
     private void unlinkScopes(Group group) {
         if (group.scopes().isEmpty()) {
             return;
@@ -137,6 +197,11 @@ public final class SQLGroupStoreDriver extends AbstractSQLStoreDriver implements
         ));
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param group {@inheritDoc}
+     */
     @Override
     public void deleteGroup(@NotNull Group group) {
         ensureOpen();
@@ -148,6 +213,11 @@ public final class SQLGroupStoreDriver extends AbstractSQLStoreDriver implements
         this.storeDriver.getScopeDriver().cleanUpScopes();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
     @Override
     public @NotNull Collection<String> getAllGroupNames() {
         ensureOpen();

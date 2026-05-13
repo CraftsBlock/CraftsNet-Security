@@ -12,10 +12,33 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Supplier;
 
+/**
+ * Handles database schema version management for the token SQL driver.
+ * <p>
+ * This component is responsible for determining whether schema upgrades
+ * are required, executing migrations in the correct order, and tracking
+ * installed schema versions inside the database.
+ * <p>
+ * All available schema upgrades are stored in chronological order and
+ * executed sequentially when required.
+ *
+ * @author Philipp Maywald
+ * @author CraftsBlock
+ * @see SQLSchemaUpgrade
+ * @since 1.0.0
+ */
 public class SQLSchemaUpdater extends SQLWorker {
 
+    /**
+     * Ordered list of all available schema upgrades.
+     */
     public final LinkedList<SQLSchemaUpgrade> versions;
 
+    /**
+     * Creates a new schema updater instance.
+     *
+     * @param connectionSupplier The supplier used to obtain SQL connections
+     */
     public SQLSchemaUpdater(Supplier<Connection> connectionSupplier) {
         super(connectionSupplier);
         this.versions = new LinkedList<>(List.of(
@@ -24,6 +47,15 @@ public class SQLSchemaUpdater extends SQLWorker {
         ));
     }
 
+    /**
+     * Checks whether the database schema requires an upgrade.
+     * <p>
+     * If no schema history table exists, the schema is considered outdated
+     * and installation is required.
+     *
+     * @return {@code true} if upgrades are pending,
+     * otherwise {@code false}
+     */
     public boolean needsUpgrade() {
         if (!isSchemaInstalled()) {
             return true;
@@ -33,6 +65,15 @@ public class SQLSchemaUpdater extends SQLWorker {
         return !versions.getLast().getVersion().equalsIgnoreCase(version);
     }
 
+    /**
+     * Executes all pending schema upgrades.
+     * <p>
+     * Upgrade execution starts after the currently installed version and
+     * continues sequentially until the newest available version is reached.
+     * Each executed migration is recorded in the schema history table.
+     *
+     * @throws IllegalStateException If a schema upgrade fails
+     */
     public void performUpgrade() {
         Logger logger = CraftsNetSecurity.getInstance().getLogger();
         int offset;
@@ -78,6 +119,12 @@ public class SQLSchemaUpdater extends SQLWorker {
         }
     }
 
+    /**
+     * Resolves a schema upgrade by its version identifier.
+     *
+     * @param version The schema version to resolve
+     * @return The matching schema upgrade, or {@code null} if none exists
+     */
     @Contract("null -> null")
     public SQLSchemaUpgrade getUpgrade(String version) {
         if (version == null) {
@@ -90,6 +137,15 @@ public class SQLSchemaUpdater extends SQLWorker {
                 .orElse(null);
     }
 
+    /**
+     * Checks whether the schema history table exists.
+     * <p>
+     * The presence of this table indicates that schema tracking has already
+     * been initialized.
+     *
+     * @return {@code true} if the schema history table exists,
+     * otherwise {@code false}
+     */
     public boolean isSchemaInstalled() {
         return this.query(this.preparedStatement("""
                 SELECT COUNT(*)
@@ -99,6 +155,11 @@ public class SQLSchemaUpdater extends SQLWorker {
                 """), result -> result.next() && result.getInt(1) == 1);
     }
 
+    /**
+     * Returns the latest successfully installed schema version.
+     *
+     * @return The installed schema version, or {@code null} if none exists
+     */
     public String getCurrentInstalledVersion() {
         return this.query(this.preparedStatement("""
                 SELECT `version`

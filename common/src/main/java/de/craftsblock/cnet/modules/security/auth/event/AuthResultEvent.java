@@ -63,7 +63,7 @@ public abstract sealed class AuthResultEvent extends Event
      * {@inheritDoc}
      * </p>
      *
-     * @return
+     * @return {@inheritDoc}
      */
     @Override
     protected boolean isAsyncAllowed() {

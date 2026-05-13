@@ -13,6 +13,21 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Polling-based SQL reload provider implementation.
+ * <p>
+ * This provider periodically checks database entities for changes by
+ * comparing modification timestamps against previously known values.
+ * Whenever changes are detected, the corresponding cache or driver
+ * components are reloaded automatically.
+ * <p>
+ * The polling process is executed asynchronously using a scheduled
+ * executor service.
+ *
+ * @author Philipp Maywald
+ * @author CraftsBlock
+ * @since 1.0.0
+ */
 public class SQLPollingReloadProvider extends SQLReloadProvider implements Runnable {
 
     private static final String SQL_UPDATE_CHECK = """
@@ -38,15 +53,37 @@ public class SQLPollingReloadProvider extends SQLReloadProvider implements Runna
     private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
     private final CraftsNetSecurityTokenSQLDriver craftsNetSecurityTokenSQLDriver = CraftsNetSecurityTokenSQLDriver.getInstance();
 
+    /**
+     * Creates a new polling reload provider using default timing values.
+     * <p>
+     * Polling starts after an initial delay of 5 seconds and repeats
+     * every 15 seconds.
+     *
+     * @param driver The SQL store driver associated with this provider
+     */
     public SQLPollingReloadProvider(@NotNull SQLStoreDriver driver) {
         this(driver, 5, 15, TimeUnit.SECONDS);
     }
 
+    /**
+     * Creates a new polling reload provider.
+     *
+     * @param driver       The SQL store driver associated with this provider
+     * @param initialDelay The initial delay before polling starts
+     * @param delay        The delay between polling executions
+     * @param unit         The time unit used for delay values
+     */
     public SQLPollingReloadProvider(@NotNull SQLStoreDriver driver, long initialDelay, long delay, @NotNull TimeUnit unit) {
         super(driver);
         executor.scheduleWithFixedDelay(this, initialDelay, delay, unit);
     }
 
+    /**
+     * Performs a single polling cycle.
+     * <p>
+     * The provider checks for changed timestamps and reloads the affected
+     * store drivers if modifications are detected.
+     */
     @Override
     public synchronized void run() {
         this.query(this.preparedStatement(SQL_UPDATE_CHECK), resultSet -> {
@@ -99,6 +136,12 @@ public class SQLPollingReloadProvider extends SQLReloadProvider implements Runna
         });
     }
 
+    /**
+     * Stops the polling executor and waits for pending tasks to complete.
+     * <p>
+     * If shutdown does not complete within the timeout window, all
+     * remaining tasks are canceled immediately.
+     */
     @Override
     public void close() {
         final Logger logger = craftsNetSecurityTokenSQLDriver.getLogger();

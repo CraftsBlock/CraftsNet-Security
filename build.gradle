@@ -31,7 +31,7 @@ subprojects {
             // CraftsBlock dependencies ----------------------------------------------------------------------------------------
 
             // https://repo.craftsblock.de/#/releases/de/craftsblock/craftscore/bom
-            implementation platform("de.craftsblock.craftscore:bom:3.8.15")
+            implementation platform("de.craftsblock.craftscore:bom:3.8.16")
 
             // https://repo.craftsblock.de/#/releases/de/craftsblock/craftsnet
             implementation "de.craftsblock:craftsnet:3.7.2-2"

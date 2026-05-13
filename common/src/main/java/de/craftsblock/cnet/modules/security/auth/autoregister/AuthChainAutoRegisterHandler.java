@@ -23,7 +23,6 @@ import de.craftsblock.craftsnet.autoregister.meta.AutoRegisterInfo;
  *
  * @author Philipp Maywald
  * @author CraftsBlock
- * @version 1.0.0
  * @see AuthChain
  * @see AuthAdapter
  * @since 1.0.0

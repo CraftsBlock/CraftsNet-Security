@@ -14,19 +14,54 @@ import org.jetbrains.annotations.NotNull;
 import java.util.EnumMap;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * HTTP authentication adapter that resolves and validates security tokens
+ * from different HTTP request locations.
+ * <p>
+ * This adapter supports multiple token sources such as headers, cookies,
+ * and session attributes. It iterates through all configured
+ * {@link HttpTokenAuthType} entries and attempts to authenticate the
+ * incoming request using the first valid token found.
+ * <p>
+ * Once a token is successfully validated, a {@link TokenUsedEvent} is
+ * emitted and the token is stored in the exchange context for further
+ * processing within the request lifecycle.
+ *
+ * @author Philipp Maywald
+ * @author CraftsBlock
+ * @since 1.0.0
+ */
 public class HttpTokenAuthAdapter implements AuthAdapter.Http {
 
     /**
-     * The expected authorization type for bearer tokens.
+     * Expected authentication scheme prefix used in HTTP Authorization headers.
      */
     public static final String HEADER_AUTH_TYPE = "bearer";
 
     private final @NotNull EnumMap<HttpTokenAuthType, String> authTypes;
 
+    /**
+     * Creates a new HTTP token authentication adapter.
+     *
+     * @param authTypes Mapping of authentication types to their
+     *                  respective request locations.
+     */
     public HttpTokenAuthAdapter(@NotNull EnumMap<HttpTokenAuthType, String> authTypes) {
         this.authTypes = authTypes;
     }
 
+    /**
+     * Attempts to authenticate the given HTTP exchange by checking
+     * all configured token sources.
+     * <p>
+     * The method evaluates each configured {@link HttpTokenAuthType}
+     * and returns the first successful authentication result. If no
+     * token is found or validation fails, an appropriate failure or
+     * skip result is returned.
+     *
+     * @param exchange The HTTP exchange to authenticate.
+     * @return The authentication result.
+     */
     @Override
     public AuthResult authenticate(Exchange exchange) {
         AtomicReference<AuthResult> authResultReference = new AtomicReference<>();
@@ -55,6 +90,18 @@ public class HttpTokenAuthAdapter implements AuthAdapter.Http {
         return AuthResult.ok();
     }
 
+    /**
+     * Attempts to authenticate a request using a specific token source.
+     * <p>
+     * This method extracts the raw token depending on the configured
+     * {@link HttpTokenAuthType}, validates it via the {@link TokenManager},
+     * and stores the resulting token in the exchange context if valid.
+     *
+     * @param exchange The HTTP exchange.
+     * @param authType The token source type.
+     * @param location The location key (header name, cookie name, or session key).
+     * @return The authentication result.
+     */
     public AuthResult authenticate(Exchange exchange, HttpTokenAuthType authType, String location) {
         final Request request = exchange.request();
         final Session session = exchange.session();

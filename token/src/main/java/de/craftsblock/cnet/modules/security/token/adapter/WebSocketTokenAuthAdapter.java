@@ -35,6 +35,21 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+/**
+ * WebSocket authentication adapter that enforces token-based authentication
+ * for incoming socket connections.
+ * <p>
+ * This adapter acts as a gatekeeper for WebSocket communication. Clients are
+ * initially marked as requiring authentication and must provide a valid token
+ * via an incoming JSON message before being granted full access.
+ * <p>
+ * Authenticated clients are tracked per token ID, and lifecycle events are
+ * used to manage connection state and cleanup on disconnect.
+ *
+ * @author Philipp Maywald
+ * @author CraftsBlock
+ * @since 1.0.0
+ */
 @ApiStatus.Internal
 @AutoRegister(startup = Startup.LOAD, instantiate = Instantiate.NEW)
 public class WebSocketTokenAuthAdapter implements ListenerAdapter, AuthAdapter.WebSocket {
@@ -49,12 +64,27 @@ public class WebSocketTokenAuthAdapter implements ListenerAdapter, AuthAdapter.W
     private static final @UnmodifiableView
     @NotNull Map<Long, Collection<WebSocketClient>> AUTHENTICATED_CLIENTS_VIEW = Collections.unmodifiableMap(AUTHENTICATED_CLIENTS);
 
+    /**
+     * Marks a new WebSocket connection as requiring authentication.
+     * <p>
+     * The actual authentication is deferred to incoming message handling.
+     *
+     * @param exchange The socket exchange being authenticated.
+     * @return Always returns {@link AuthResult#skip()} since authentication
+     * is handled asynchronously via messages.
+     */
     @Override
     public AuthResult authenticate(SocketExchange exchange) {
         exchange.context().put(new RequireAuth());
         return AuthResult.skip();
     }
 
+    /**
+     * Handles client disconnect events and removes the client from the
+     * authenticated registry if necessary.
+     *
+     * @param event The disconnect event.
+     */
     @EventHandler(priority = EventPriority.NORMAL)
     public void handleDisconnect(ClientDisconnectEvent event) {
         final WebSocketClient client = event.getClient();
@@ -77,6 +107,16 @@ public class WebSocketTokenAuthAdapter implements ListenerAdapter, AuthAdapter.W
         }
     }
 
+    /**
+     * Intercepts incoming WebSocket messages and performs authentication
+     * if required.
+     * <p>
+     * This method expects the first message to contain a JSON payload with
+     * a valid token. Once authenticated, the client is marked as authorized
+     * and allowed to continue communication.
+     *
+     * @param event The incoming message event.
+     */
     @EventHandler(priority = EventPriority.NORMAL, ignoreWhenCancelled = true)
     public void handleIncomingMessage(IncomingSocketMessageEvent event) {
         final SocketExchange exchange = event.getExchange();
@@ -120,12 +160,25 @@ public class WebSocketTokenAuthAdapter implements ListenerAdapter, AuthAdapter.W
         }
     }
 
+    /**
+     * Handles authentication failure by sending an error response
+     * and closing the connection.
+     *
+     * @param client The client to reject.
+     * @param reason The reason for failure.
+     */
     private void failAuth(WebSocketClient client, String reason) {
         client.sendMessage(MESSAGE_WRONG_AUTH);
         CraftsNetSecurity.getInstance().getLogger().debug("%s failed to authenticate \u001b[38;5;9m[%s]", client.getIp(), reason);
         client.close(ClosureCode.NORMAL, MESSAGE_LITERAL_WRONG_AUTH);
     }
 
+    /**
+     * Prevents unauthenticated outgoing messages from being sent
+     * through the WebSocket connection.
+     *
+     * @param event The outgoing message event.
+     */
     @EventHandler(ignoreWhenCancelled = true)
     public void handleOutgoingMessage(OutgoingSocketMessageEvent event) {
         final SocketExchange exchange = event.getExchange();
@@ -140,10 +193,23 @@ public class WebSocketTokenAuthAdapter implements ListenerAdapter, AuthAdapter.W
         event.setCancelled(true);
     }
 
+    /**
+     * Checks whether a WebSocket client has successfully authenticated.
+     *
+     * @param client The client to check.
+     * @return {@code true} if authenticated, otherwise {@code false}.
+     */
     public static boolean isAuthenticated(@NotNull WebSocketClient client) {
         return client.getContext().containsKey(Authenticated.class);
     }
 
+    /**
+     * Returns the timestamp at which the client authenticated.
+     *
+     * @param client The client to inspect.
+     * @return The authentication timestamp, {@code -1} if still pending,
+     * or {@code -2} if no authentication data exists.
+     */
     public static @Range(from = -2, to = Long.MAX_VALUE) long getAuthenticationTimestamp(@NotNull WebSocketClient client) {
         final Context context = client.getContext();
         if (context.containsKey(RequireAuth.class)) {
@@ -158,13 +224,24 @@ public class WebSocketTokenAuthAdapter implements ListenerAdapter, AuthAdapter.W
         return authenticated.timestamp();
     }
 
+    /**
+     * Returns an immutable view of all authenticated clients grouped by token ID.
+     *
+     * @return Map of token IDs to their associated authenticated clients.
+     */
     public static @UnmodifiableView @NotNull Map<Long, Collection<WebSocketClient>> getAuthenticatedClients() {
         return AUTHENTICATED_CLIENTS_VIEW;
     }
 
+    /**
+     * Marker object indicating that a client still requires authentication.
+     */
     private static class RequireAuth {
     }
 
+    /**
+     * Internal record storing authentication timestamp metadata.
+     */
     private record Authenticated(long timestamp) {
     }
 

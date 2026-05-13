@@ -9,18 +9,47 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Set;
 
+/**
+ * File-based implementation of the {@link TokenStoreDriver}.
+ * <p>
+ * This driver persists {@link Token} instances inside a JSON file where each
+ * token is stored under its numeric identifier as the root key.
+ * <p>
+ * It extends {@link AbstractFileStoreDriver} to reuse common file handling,
+ * caching, and hot-reload capabilities.
+ *
+ * @author Philipp Maywald
+ * @author CraftsBlock
+ * @see AbstractFileStoreDriver
+ * @see TokenStoreDriver
+ * @since 1.0.0
+ */
 public final class FileTokenStoreDriver extends AbstractFileStoreDriver implements TokenStoreDriver {
 
+    /**
+     * Creates a new file-based token store driver.
+     *
+     * @param tokensFile The file used to persist token data.
+     */
     FileTokenStoreDriver(@NotNull Path tokensFile) {
         super(tokensFile);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void reload() {
         TokenStoreDriver.super.reload();
         super.reload();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param id {@inheritDoc}
+     * @return {@inheritDoc}
+     */
     @Override
     public boolean existsToken(long id) {
         return this.json(json -> {
@@ -28,6 +57,12 @@ public final class FileTokenStoreDriver extends AbstractFileStoreDriver implemen
         });
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param id {@inheritDoc}
+     * @return {@inheritDoc}
+     */
     @Override
     public Token loadToken(long id) {
         Json token = this.json(json -> {
@@ -41,6 +76,11 @@ public final class FileTokenStoreDriver extends AbstractFileStoreDriver implemen
         return Token.fromJson(token);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param token {@inheritDoc}
+     */
     @Override
     public void saveToken(@NotNull Token token) {
         this.json(json -> {
@@ -50,6 +90,11 @@ public final class FileTokenStoreDriver extends AbstractFileStoreDriver implemen
         });
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param token {@inheritDoc}
+     */
     @Override
     public void deleteToken(@NotNull Token token) {
         this.json(json -> {
@@ -59,6 +104,11 @@ public final class FileTokenStoreDriver extends AbstractFileStoreDriver implemen
         });
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
     @Override
     public @NotNull Collection<Long> getAllTokenIds() {
         Set<String> stringIds = this.json(json -> {

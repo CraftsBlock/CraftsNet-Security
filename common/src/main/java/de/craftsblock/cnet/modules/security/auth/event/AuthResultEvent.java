@@ -23,4 +23,9 @@ public abstract sealed class AuthResultEvent extends Event
         return result;
     }
 
+    @Override
+    protected boolean isAsyncAllowed() {
+        return false;
+    }
+
 }

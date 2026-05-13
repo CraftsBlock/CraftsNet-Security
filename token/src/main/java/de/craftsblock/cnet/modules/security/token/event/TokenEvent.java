@@ -16,4 +16,9 @@ public abstract sealed class TokenEvent extends Event
         return token;
     }
 
+    @Override
+    protected boolean isAsyncAllowed() {
+        return false;
+    }
+
 }

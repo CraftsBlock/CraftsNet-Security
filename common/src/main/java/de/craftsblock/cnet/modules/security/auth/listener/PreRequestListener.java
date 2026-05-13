@@ -16,18 +16,56 @@ import de.craftsblock.craftsnet.autoregister.meta.constructors.FallbackConstruct
 import de.craftsblock.craftsnet.autoregister.meta.constructors.PreferConstructor;
 import de.craftsblock.craftsnet.events.requests.PreRequestEvent;
 
+/**
+ * Listener responsible for authenticating incoming HTTP requests
+ * before they are processed by the request handling pipeline.
+ * <p>
+ * This listener hooks into the {@link PreRequestEvent} and executes
+ * the configured authentication chain for every incoming request.
+ * <p>
+ * If authentication fails, the listener automatically logs the
+ * failed request and generates a JSON error response containing
+ * the authentication failure information.
+ *
+ * @author Philipp Maywald
+ * @author CraftsBlock
+ * @see PreRequestEvent
+ * @see AuthListener
+ * @since 1.0.0
+ */
 @AutoRegister(startup = Startup.LOAD)
 public record PreRequestListener(CraftsNet craftsNet, CraftsNetSecurity addon) implements AuthListener<Response>, ListenerAdapter {
 
+    /**
+     * Preferred constructor used by the auto registration system.
+     *
+     * @param craftsNet The active CraftsNet instance.
+     * @param addon     The active security addon instance.
+     */
     @PreferConstructor
     public PreRequestListener {
     }
 
+    /**
+     * Fallback constructor that automatically resolves
+     * the active {@link CraftsNetSecurity} instance.
+     *
+     * @param craftsNet The active CraftsNet instance.
+     */
     @FallbackConstructor
     public PreRequestListener(CraftsNet craftsNet) {
         this(craftsNet, CraftsNetSecurity.getInstance());
     }
 
+    /**
+     * Handles incoming pre request events and executes
+     * the HTTP authentication chain.
+     * <p>
+     * If authentication fails, the request is logged and
+     * a JSON error response is sent back to the client.
+     *
+     * @param event The triggered pre request event.
+     */
     @EventHandler(priority = EventPriority.LOW, ignoreWhenCancelled = true)
     public void handlePreRequestEvent(PreRequestEvent event) {
         final Exchange exchange = event.getExchange();

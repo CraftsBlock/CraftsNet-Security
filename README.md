@@ -2,7 +2,7 @@
 
 A modular authentication and authorization extension for the CraftsNet framework.
 
-![Latest Release on Maven](https://repo.craftsblock.de/api/badge/latest/experimental/de/craftsblock/craftsnet/modules/security?color=40c14a&name=CraftsNet%20Security&prefix=v)
+![Latest Release on Maven](https://repo.craftsblock.de/api/badge/latest/releases/de/craftsblock/craftsnet/modules/security?color=40c14a&name=CraftsNet%20Security&prefix=v)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/CraftsBlock/CraftsNet-Security)
 ![GitHub](https://img.shields.io/github/license/CraftsBlock/CraftsNet-Security)
 ![GitHub all releases](https://img.shields.io/github/downloads/CraftsBlock/CraftsNet-Security/total)

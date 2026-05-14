@@ -1,0 +1,20 @@
+{
+  "name": "CraftsNetSecurityToken",
+  "main": "de.craftsblock.cnet.modules.security.token.CraftsNetSecurityToken",
+  "description": "Protect your api with an permission based token system.",
+  "website": "https://craftsblock.de",
+  "version": "1.0.0",
+  "authors": [
+    "Philipp Maywald",
+    "CraftsBlock"
+  ],
+  "depends": [
+    "CraftsNetSecurity"
+  ],
+  "repositories": [
+    "https://repo.craftsblock.de/releases"
+  ],
+  "dependencies": [
+    "org.springframework.security:spring-security-crypto:7.1.0-RC1"
+  ]
+}

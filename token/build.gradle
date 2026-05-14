@@ -1,0 +1,10 @@
+plugins {
+    id "java"
+}
+
+dependencies {
+    implementation project(":common")
+
+    // https://repo.craftsblock.de/#/releases/de/craftsblock/craftscore/sql
+    implementation "de.craftsblock.craftscore:sql"
+}

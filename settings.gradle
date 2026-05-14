@@ -1,2 +1,16 @@
+pluginManagement {
+    repositories {
+        maven {
+            url = uri("https://repo.craftsblock.de/releases")
+        }
+        gradlePluginPortal()
+    }
+}
+
 rootProject.name = 'Security'
 
+
+include 'bom'
+include 'common'
+include 'token'
+include 'token-sql'

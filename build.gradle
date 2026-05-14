@@ -1,86 +1,97 @@
 plugins {
-    id 'java'
-    id 'maven-publish'
+    id "de.craftsblock.gradle.publish" version "0.0.20" apply false
 }
 
-def env = new Properties()
-file(".env").withInputStream {
-    env.load(it)
-}
+version = "1.0.0-pre3"
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+subprojects {
+    group = 'de.craftsblock.craftsnet.modules.security'
+    version = rootProject.version
 
-    withJavadocJar()
-    withSourcesJar()
-}
-
-group = 'de.craftsblock.craftsnet.modules'
-version = '1.0.0-pre10'
-
-repositories {
-    mavenCentral()
-    maven { url "https://repo.craftsblock.de/releases" }
-    maven { url "https://repo.craftsblock.de/experimental" }
-}
-
-dependencies {
-    // CraftsBlock dependencies ----------------------------------------------------------------------------------------
-
-    // https://repo.craftsblock.de/#/releases/de/craftsblock/craftscore/bom
-    implementation platform("de.craftsblock.craftscore:bom:3.8.12")
-
-    // https://repo.craftsblock.de/#/releases/de/craftsblock/craftscore/event
-    implementation "de.craftsblock.craftscore:event"
-
-    // https://repo.craftsblock.de/#/releases/de/craftsblock/craftscore/json
-    implementation "de.craftsblock.craftscore:json"
-
-    // https://repo.craftsblock.de/#/releases/de/craftsblock/craftscore/sql
-    implementation "de.craftsblock.craftscore:sql"
-
-    // https://repo.craftsblock.de/#/releases/de/craftsblock/craftscore/utils
-    implementation "de.craftsblock.craftscore:utils"
-
-    // https://repo.craftsblock.de/#/releases/de/craftsblock/craftsnet
-    implementation "de.craftsblock:craftsnet:3.5.6-pre6"
-
-    // Third party dependencies ----------------------------------------------------------------------------------------
-
-    // https://mvnrepository.com/artifact/org.springframework.security/spring-security-crypto
-    implementation 'org.springframework.security:spring-security-crypto:6.5.0'
-
-    // https://mvnrepository.com/artifact/org.jetbrains/annotations
-    implementation 'org.jetbrains:annotations:26.0.2'
-
-}
-
-tasks.withType(JavaCompile).configureEach {
-    options.encoding = 'UTF-8'
-}
-
-jar {
-    from sourceSets.main.output
-
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-
-    manifest {
-        attributes(
-                'Implementation-Title': project.name,
-                'Implementation-Version': project.version
-        )
+    repositories {
+        mavenCentral()
+        maven { url = "https://repo.craftsblock.de/releases" }
+        maven { url = "https://repo.craftsblock.de/experimental" }
     }
-}
 
-publishing {
-    publications {
-        normal(MavenPublication) {
-            artifactId "security"
-            from components.java
+    afterEvaluate {
+        if (project.components.findByName("javaPlatform") != null) {
+            return
+        }
+
+        java {
+            sourceCompatibility = JavaVersion.VERSION_17
+            targetCompatibility = JavaVersion.VERSION_17
+
+            withJavadocJar()
+            withSourcesJar()
+        }
+
+        dependencies {
+            // CraftsBlock dependencies ----------------------------------------------------------------------------------------
+
+            // https://repo.craftsblock.de/#/releases/de/craftsblock/craftscore/bom
+            implementation platform("de.craftsblock.craftscore:bom:3.8.16")
+
+            // https://repo.craftsblock.de/#/releases/de/craftsblock/craftsnet
+            implementation "de.craftsblock:craftsnet:3.7.2-2"
+//            implementation files("C:\\Users\\phili\\Development\\CraftsBlock\\CraftsNet\\build\\libs\\CraftsNet-3.7.2-2-runnable.jar")
+
+            // Third party dependencies ----------------------------------------------------------------------------------------
+
+            // https://mvnrepository.com/artifact/org.springframework.security/spring-security-crypto
+            implementation 'org.springframework.security:spring-security-crypto:7.1.0-RC1'
+
+            // https://mvnrepository.com/artifact/org.jetbrains/annotations
+            implementation 'org.jetbrains:annotations:26.1.0'
+
+        }
+
+        tasks.withType(JavaCompile).configureEach {
+            options.encoding = 'UTF-8'
+        }
+
+        jar {
+            from sourceSets.main.output
+
+            duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+            manifest {
+                attributes(
+                        'Implementation-Title': project.name,
+                        'Implementation-Version': project.version
+                )
+            }
+        }
+    }
+
+    afterEvaluate {
+        def softwareComponent = project.components.findByName("java")
+                ?: project.components.findByName("javaPlatform")
+
+        if (softwareComponent != null && softwareComponent.name.equalsIgnoreCase("java")) {
+            dependencies {
+                // https://mvnrepository.com/artifact/org.jetbrains/annotations
+                implementation "org.jetbrains:annotations:26.1.0"
+            }
+        }
+
+        if (project.ext.has("shouldPublish") && !project.ext["shouldPublish"]) {
+            return
+        }
+
+        apply plugin: "maven-publish"
+        apply plugin: "de.craftsblock.gradle.publish"
+
+        craftsPublish {
+            artifactId = project.name
+            name = "CraftsNet Security ${project.name}"
+
+            component = softwareComponent
+
             pom {
-                name = 'Security'
-                description = 'Protect your CraftsNet Restful API with an token-based access control system'
+                name = project.name
+                description = project.description
 
                 scm {
                     url = 'https://github.com/CraftsBlock/CraftsNet-Security'
@@ -99,18 +110,6 @@ publishing {
                         url = 'https://github.com/CraftsBlock/CraftsNet-Security/blob/master/LICENSE'
                     }
                 }
-            }
-        }
-    }
-    repositories {
-        maven {
-            url('https://repo.craftsblock.de/experimental')
-            authentication {
-                basic(BasicAuthentication)
-            }
-            credentials {
-                username = env["username"]
-                password = env["password"]
             }
         }
     }

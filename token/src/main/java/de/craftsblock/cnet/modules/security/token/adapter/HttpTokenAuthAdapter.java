@@ -133,7 +133,7 @@ public class HttpTokenAuthAdapter implements AuthAdapter.Http {
 
         Token token = TokenManager.getInstance().getValidated(plainToken);
         if (token == null) {
-            return AuthResult.failure("Not allowed! 2");
+            return AuthResult.failure("Not allowed!");
         }
 
         CraftsNetSecurity.getInstance().getListenerRegistry().call(new TokenUsedEvent(token));

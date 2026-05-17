@@ -2,7 +2,7 @@ plugins {
     id "de.craftsblock.gradle.publish" version "0.0.21" apply false
 }
 
-version = "1.0.0"
+version = "1.0.1"
 
 subprojects {
     group = 'de.craftsblock.craftsnet.modules.security'
@@ -35,7 +35,6 @@ subprojects {
 
             // https://repo.craftsblock.de/#/releases/de/craftsblock/craftsnet
             implementation "de.craftsblock:craftsnet:3.7.2-2"
-//            implementation files("C:\\Users\\phili\\Development\\CraftsBlock\\CraftsNet\\build\\libs\\CraftsNet-3.7.2-2-runnable.jar")
 
             // Third party dependencies ----------------------------------------------------------------------------------------
 

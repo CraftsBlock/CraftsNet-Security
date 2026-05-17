@@ -8,6 +8,8 @@ import de.craftsblock.craftscore.event.ListenerAdapter;
 import de.craftsblock.craftscore.json.Json;
 import de.craftsblock.craftsnet.addon.meta.Startup;
 import de.craftsblock.craftsnet.api.BaseExchange;
+import de.craftsblock.craftsnet.api.RouteRegistry;
+import de.craftsblock.craftsnet.api.annotations.ProcessPriority;
 import de.craftsblock.craftsnet.api.http.Exchange;
 import de.craftsblock.craftsnet.api.http.status.HttpStatus;
 import de.craftsblock.craftsnet.api.utils.Context;
@@ -19,7 +21,10 @@ import de.craftsblock.craftsnet.events.requests.routes.RouteRequestEvent;
 import de.craftsblock.craftsnet.events.sockets.message.IncomingSocketMessageEvent;
 import org.jetbrains.annotations.ApiStatus;
 
+import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumMap;
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -55,15 +60,22 @@ public class GroupResolveMiddleware implements ListenerAdapter {
      * are satisfied. If validation fails, the provided cancellation consumer
      * is executed.
      *
-     * @param exchange  the active exchange (HTTP or WebSocket)
-     * @param event     the cancellable event associated with the exchange
-     * @param subject   the subject that should receive failure handling (response or client)
-     * @param onFailure callback executed when group validation fails
-     * @param <T>       the type of the subject (response or websocket client)
+     * @param exchange  The active exchange (HTTP or WebSocket)
+     * @param mappings  The endpoint mappings used.
+     * @param event     The cancellable event associated with the exchange
+     * @param subject   The subject that should receive failure handling (response or client)
+     * @param onFailure Callback executed when group validation fails
+     * @param <T>       The type of the subject (response or websocket client)
      */
-    private <T> void handle(BaseExchange exchange, CancellableEvent event, T subject, Consumer<T> onFailure) {
+    private <T> void handle(BaseExchange exchange, Collection<RouteRegistry.EndpointMapping> mappings,
+                            CancellableEvent event, T subject, Consumer<T> onFailure) {
         Context context = exchange.context();
-        if (context == null || !context.containsKey(GroupRequest.class)) {
+        if (context == null) {
+            return;
+        }
+
+        final GroupRequest result = GroupRequest.fromMappings(mappings);
+        if (result.groups().isEmpty()) {
             return;
         }
 
@@ -78,8 +90,6 @@ public class GroupResolveMiddleware implements ListenerAdapter {
         }
 
         final Token token = context.getTyped(Token.class);
-        final GroupRequest result = context.getTyped(GroupRequest.class);
-
         if (token.groupNames().containsAll(result.groups())) {
             context.remove(GroupRequest.class);
             context.put(new UsedGroups(Collections.unmodifiableList(result.groups())));
@@ -97,13 +107,13 @@ public class GroupResolveMiddleware implements ListenerAdapter {
     /**
      * Validates group requirements during HTTP route request processing.
      *
-     * @param event the route request event being processed
+     * @param event The route request event being processed
      */
     @EventHandler(priority = EventPriority.NORMAL, ignoreWhenCancelled = true)
     public void handleRequest(RouteRequestEvent event) {
         final Exchange exchange = event.getExchange();
 
-        handle(exchange, event, exchange.response(), response -> {
+        handle(exchange, event.getMappings(), event, exchange.response(), response -> {
             if (!response.headersSent()) {
                 response.setStatus(HttpStatus.ClientError.BAD_REQUEST);
             }
@@ -117,13 +127,21 @@ public class GroupResolveMiddleware implements ListenerAdapter {
     /**
      * Validates group requirements during incoming WebSocket message processing.
      *
-     * @param event the incoming websocket message event
+     * @param event The incoming websocket message event
      */
     @EventHandler(priority = EventPriority.HIGH, ignoreWhenCancelled = true)
     public void handleWebSocketMessage(IncomingSocketMessageEvent event) {
         final SocketExchange exchange = event.getExchange();
+        final var endpoints = exchange.client().getEndpoint();
+        if (endpoints == null) {
+            return;
+        }
 
-        handle(exchange, event, exchange.client(), client -> {
+        final Collection<RouteRegistry.EndpointMapping> mappings = endpoints.values().stream()
+                .flatMap(Collection::stream)
+                .toList();
+
+        handle(exchange, mappings, event, exchange.client(), client -> {
             client.sendMessage(MISSING_GROUPS_MESSAGE);
             client.close(ClosureCode.NORMAL, "Not allowed!");
         });

@@ -2,7 +2,7 @@ plugins {
     id "de.craftsblock.gradle.publish" version "0.0.21" apply false
 }
 
-version = "1.0.1"
+version = "1.0.2"
 
 subprojects {
     group = 'de.craftsblock.craftsnet.modules.security'

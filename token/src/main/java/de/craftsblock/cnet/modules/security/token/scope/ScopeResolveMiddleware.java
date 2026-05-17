@@ -8,6 +8,7 @@ import de.craftsblock.craftscore.event.ListenerAdapter;
 import de.craftsblock.craftscore.json.Json;
 import de.craftsblock.craftsnet.addon.meta.Startup;
 import de.craftsblock.craftsnet.api.BaseExchange;
+import de.craftsblock.craftsnet.api.RouteRegistry;
 import de.craftsblock.craftsnet.api.http.Exchange;
 import de.craftsblock.craftsnet.api.http.status.HttpStatus;
 import de.craftsblock.craftsnet.api.utils.Context;
@@ -19,12 +20,12 @@ import de.craftsblock.craftsnet.events.requests.routes.RouteRequestEvent;
 import de.craftsblock.craftsnet.events.sockets.message.IncomingSocketMessageEvent;
 import org.jetbrains.annotations.ApiStatus;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.function.Consumer;
 
 /**
- * Middleware responsible for resolving and validating required scopes
- * that were injected into the request or socket context by {@link ScopeRequirement}.
+ * Middleware responsible for resolving and validating required scopes.
  * <p>
  * This component runs inside the CraftsNet event pipeline and ensures that
  * authenticated tokens fulfill all declared scope requirements before
@@ -63,9 +64,15 @@ public class ScopeResolveMiddleware implements ListenerAdapter {
      * @param onFailure Callback executed when validation fails
      * @param <T>       The type of subject handled by the failure callback
      */
-    private <T> void handle(BaseExchange exchange, CancellableEvent event, T subject, Consumer<T> onFailure) {
+    private <T> void handle(BaseExchange exchange, Collection<RouteRegistry.EndpointMapping> mappings,
+                            CancellableEvent event, T subject, Consumer<T> onFailure) {
         Context context = exchange.context();
-        if (context == null || !context.containsKey(ScopeRequest.class)) {
+        if (context == null) {
+            return;
+        }
+
+        final ScopeRequest result = ScopeRequest.fromMappings(mappings);
+        if (result.scopes().isEmpty()) {
             return;
         }
 
@@ -80,8 +87,6 @@ public class ScopeResolveMiddleware implements ListenerAdapter {
         }
 
         final Token token = context.getTyped(Token.class);
-        final ScopeRequest result = context.getTyped(ScopeRequest.class);
-
         if (token.scopes().containsAll(result.scopes())) {
             context.remove(ScopeRequest.class);
             context.put(new UsedScopes(Collections.unmodifiableList(result.scopes())));
@@ -104,7 +109,7 @@ public class ScopeResolveMiddleware implements ListenerAdapter {
     @EventHandler(priority = EventPriority.NORMAL, ignoreWhenCancelled = true)
     public void handleRequest(RouteRequestEvent event) {
         final Exchange exchange = event.getExchange();
-        handle(exchange, event, exchange.response(), response -> {
+        handle(exchange, event.getMappings(), event, exchange.response(), response -> {
             if (!response.headersSent()) {
                 response.setStatus(HttpStatus.ClientError.BAD_REQUEST);
             }
@@ -123,7 +128,16 @@ public class ScopeResolveMiddleware implements ListenerAdapter {
     @EventHandler(priority = EventPriority.HIGH, ignoreWhenCancelled = true)
     public void handleWebSocketMessage(IncomingSocketMessageEvent event) {
         final SocketExchange exchange = event.getExchange();
-        handle(exchange, event, exchange.client(), client -> {
+        final var endpoints = exchange.client().getEndpoint();
+        if (endpoints == null) {
+            return;
+        }
+
+        final Collection<RouteRegistry.EndpointMapping> mappings = endpoints.values().stream()
+                .flatMap(Collection::stream)
+                .toList();
+
+        handle(exchange, mappings, event, exchange.client(), client -> {
             client.sendMessage(MISSING_SCOPES_MESSAGE);
             client.close(ClosureCode.NORMAL, "Not allowed!");
         });

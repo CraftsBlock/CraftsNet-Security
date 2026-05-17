@@ -10,10 +10,8 @@ import java.lang.annotation.*;
  * Annotation used to declare required authentication scopes on routes
  * or endpoint handlers.
  * <p>
- * This annotation integrates into the CraftsNet requirement system and
- * is processed by {@link ScopeRequirement}. The declared scope values
- * are injected into the request or WebSocket context as a {@link ScopeRequest}
- * and later validated by {@link ScopeResolveMiddleware}.
+ * The declared scope values are injected into the request or WebSocket
+ * context as a {@link ScopeRequest} and later validated by {@link ScopeResolveMiddleware}.
  * <p>
  * If a request does not provide a token containing all required scopes,
  * access to the endpoint will be denied during the authentication pipeline.

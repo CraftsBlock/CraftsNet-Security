@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
  * @see Scheme
  * @since 1.0.0
  */
-public sealed interface Exclusion permits Exclusion.HttpExclusion, Exclusion.WebSocketExclusion {
+interface Exclusion {
 
     /**
      * Returns the network scheme this exclusion applies to.

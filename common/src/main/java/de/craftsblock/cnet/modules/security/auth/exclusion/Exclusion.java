@@ -48,14 +48,17 @@ interface Exclusion {
      */
     static Pattern sanitizePattern(@RegExp String path) {
         String sanitized = path.trim()
-                .replaceAll("//+", "/")
-                .replaceAll("/$", "/?");
-        if (!sanitized.startsWith("/")) {
-            return Pattern.compile("/" + sanitized);
-        }
+                .replaceAll("/{2,}", "/")
+                .replaceAll("/$", "/?")
+                .replaceAll("^\\^+|\\$+$", "");
 
-        return Pattern.compile(sanitized);
+        return Pattern.compile(
+                "^" +
+                        (sanitized.startsWith("/") ? sanitized : "/" + sanitized) +
+                        "$"
+        );
     }
+
 
     /**
      * Represents an HTTP-specific exclusion rule that additionally

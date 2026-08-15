@@ -65,8 +65,8 @@ public class TokenManager {
      * @param token The token to persist.
      */
     public synchronized void persist(Token token) {
-        StoreDriver.getInstance().saveToken(token);
         tokenCache.put(token.id(), token);
+        StoreDriver.getInstance().saveToken(token);
     }
 
     /**
@@ -85,8 +85,8 @@ public class TokenManager {
      * @param id The token identifier.
      */
     public synchronized void delete(long id) {
-        StoreDriver.getInstance().deleteToken(id);
         removeCache(id);
+        StoreDriver.getInstance().deleteToken(id);
     }
 
     /**
@@ -231,12 +231,15 @@ public class TokenManager {
     public CreatedToken create(Collection<String> scopes, Collection<String> groups) {
         long id = Snowflake.generate();
         byte[] secret = TokenUtil.newSecureSecret();
-        String secretHash = BCrypt.hashpw(secret, BCrypt.gensalt());
 
         try {
+            String secretHash = BCrypt.hashpw(secret, BCrypt.gensalt());
             Token token = new Token(id, secretHash, scopes, OptionalGroup.fromList(groups),
                     new TokenDataContainer());
+
+            tokenCache.put(id, token);
             CraftsNetSecurity.getInstance().getListenerRegistry().call(new TokenCreateEvent(token));
+
             return new CreatedToken(
                     token,
                     TokenUtil.mergeTokenParts(id, secret)

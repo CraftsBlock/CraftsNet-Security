@@ -88,12 +88,11 @@ public final class SQLTokenStoreDriver extends AbstractSQLStoreDriver implements
                             `token`.`hash`,
                             `token`.`data_container`,
                             `scope`.`value` AS `scope`,
-                            `group`.`name` AS `group_name`
+                            `token_group`.`group_id` AS `group_name`
                         FROM `cnet_security_tokens` `token`
                         LEFT JOIN `cnet_security_entity_scopes` `entity_scope` ON `entity_scope`.`token_id` = `token`.`id`
                         LEFT JOIN `cnet_security_scopes` `scope` ON `scope`.`id` = `entity_scope`.`scope_id`
                         LEFT JOIN `cnet_security_token_groups` `token_group` ON `token_group`.`token_id` = `token`.`id`
-                        LEFT JOIN `cnet_security_groups` `group` ON `group`.`name` = `token_group`.`group_id`
                         WHERE `token`.`id` = ?;
                         """,
                 id

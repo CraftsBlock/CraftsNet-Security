@@ -146,10 +146,10 @@ public class WebSocketTokenAuthAdapter implements ListenerAdapter, AuthAdapter.W
                 return;
             }
 
-            CraftsNetSecurity.getInstance().getListenerRegistry().call(new TokenUsedEvent(token));
             context.put(token);
             context.put(new Authenticated(System.currentTimeMillis()));
             context.remove(RequireAuth.class);
+            CraftsNetSecurity.getInstance().getListenerRegistry().call(new TokenUsedEvent(token, exchange));
 
             synchronized (AUTHENTICATED_CLIENTS) {
                 AUTHENTICATED_CLIENTS.computeIfAbsent(token.id(), id -> new ConcurrentLinkedQueue<>())

@@ -136,8 +136,9 @@ public class HttpTokenAuthAdapter implements AuthAdapter.Http {
             return AuthResult.failure("Not allowed!");
         }
 
-        CraftsNetSecurity.getInstance().getListenerRegistry().call(new TokenUsedEvent(token));
         exchange.context().put(token);
+        CraftsNetSecurity.getInstance().getListenerRegistry().call(new TokenUsedEvent(token, exchange));
+
         return AuthResult.ok();
     }
 

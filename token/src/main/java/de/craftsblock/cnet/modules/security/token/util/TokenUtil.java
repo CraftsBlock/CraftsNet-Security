@@ -4,7 +4,6 @@ import de.craftsblock.craftscore.buffer.BufferUtil;
 import de.craftsblock.craftsnet.utils.PassphraseUtils;
 
 import java.nio.charset.StandardCharsets;
-import java.util.regex.Pattern;
 
 /**
  * Utility class responsible for token generation, encoding, decoding and
@@ -22,8 +21,15 @@ import java.util.regex.Pattern;
  */
 public class TokenUtil {
 
-    private static String TOKEN_PREFIX = "cnet_";
-    private static final byte[] TOKEN_PART_SEPARATOR_BYTES = ".".getBytes(StandardCharsets.UTF_8);
+    private static final String DEFAULT_TOKEN_PREFIX = "cnet_";
+    private static final String TOKEN_PART_SEPARATOR = ".";
+
+    private static volatile String TOKEN_PREFIX = DEFAULT_TOKEN_PREFIX;
+    private static volatile byte[] TOKEN_PREFIX_BYTES =
+            DEFAULT_TOKEN_PREFIX.getBytes(StandardCharsets.UTF_8);
+
+    private static final byte[] TOKEN_PART_SEPARATOR_BYTES =
+            TOKEN_PART_SEPARATOR.getBytes(StandardCharsets.UTF_8);
 
     private TokenUtil() {
     }
@@ -48,15 +54,21 @@ public class TokenUtil {
      * @return the serialized token byte array
      */
     public static byte[] mergeTokenParts(long id, byte[] secret) {
-        byte[] tokenPrefixBytes = TOKEN_PREFIX.getBytes(StandardCharsets.UTF_8);
-        byte[] idBytes = Long.toHexString(id).getBytes(StandardCharsets.UTF_8);
+        if (secret == null) {
+            throw new IllegalArgumentException("Secret must not be null");
+        }
 
-        BufferUtil buffer = BufferUtil.allocate(tokenPrefixBytes.length + idBytes.length
-                + TOKEN_PART_SEPARATOR_BYTES.length + secret.length);
+        byte[] idBytes = Long.toHexString(id).getBytes(StandardCharsets.UTF_8);
+        BufferUtil buffer = BufferUtil.allocate(
+                TOKEN_PREFIX_BYTES.length
+                        + idBytes.length
+                        + TOKEN_PART_SEPARATOR_BYTES.length
+                        + secret.length
+        );
 
         try {
             buffer.with(raw -> {
-                raw.put(tokenPrefixBytes);
+                raw.put(TOKEN_PREFIX_BYTES);
                 raw.put(idBytes);
                 raw.put(TOKEN_PART_SEPARATOR_BYTES);
                 raw.put(secret);
@@ -64,7 +76,6 @@ public class TokenUtil {
 
             return buffer.toByteArray();
         } finally {
-            PassphraseUtils.erase(tokenPrefixBytes);
             PassphraseUtils.erase(idBytes);
         }
     }
@@ -79,21 +90,32 @@ public class TokenUtil {
      * @return the parsed {@link TokenParts} or {@code null} if invalid
      */
     public static TokenParts splitToTokenParts(String token) {
-        if (!token.startsWith(TOKEN_PREFIX)) {
+        if (token == null || token.isBlank()) {
             return null;
         }
 
-        String[] parts = token.replaceFirst("^" + Pattern.quote(TOKEN_PREFIX), "")
-                .split("\\.", 2);
+        String prefix = TOKEN_PREFIX;
+        if (!token.startsWith(prefix)) {
+            return null;
+        }
 
-        if (parts.length != 2) {
+        String remainder = token.substring(prefix.length());
+        if (remainder.isBlank()) {
+            return null;
+        }
+
+        String[] parts = remainder.split("\\.", 2);
+        if (parts.length != 2 || parts[1].isEmpty()) {
             return null;
         }
 
         try {
-            String id = parts[0];
-            long idLong = Long.parseLong(id, 16);
-            return new TokenParts(TOKEN_PREFIX.replace("_", ""), idLong, parts[1].getBytes());
+            long id = Long.parseLong(parts[0], 16);
+            return new TokenParts(
+                    prefix,
+                    id,
+                    parts[1].getBytes(StandardCharsets.UTF_8)
+            );
         } catch (NumberFormatException ignored) {
             return null;
         }
@@ -104,20 +126,23 @@ public class TokenUtil {
      *
      * @param tokenPrefix the new prefix value
      */
-    public static void setTokenPrefix(String tokenPrefix) {
-        TOKEN_PREFIX = tokenPrefix.replaceAll("_+", "_").trim();
+    public synchronized static void setTokenPrefix(String tokenPrefix) {
+        if (tokenPrefix == null) {
+            throw new IllegalArgumentException("Token prefix must not be null");
+        }
 
-        if (TOKEN_PREFIX.endsWith("_")) return;
-        TOKEN_PREFIX += "_";
-    }
+        String normalized = tokenPrefix.trim();
 
-    /**
-     * Returns the currently configured token prefix.
-     *
-     * @return the active token prefix
-     */
-    public static String getTokenPrefix() {
-        return TOKEN_PREFIX;
+        if (normalized.isEmpty()) {
+            throw new IllegalArgumentException("Token prefix must not be empty");
+        }
+
+        if (!normalized.endsWith("_")) {
+            normalized += "_";
+        }
+
+        TOKEN_PREFIX = normalized;
+        TOKEN_PREFIX_BYTES = normalized.getBytes(StandardCharsets.UTF_8);
     }
 
     /**
@@ -125,8 +150,8 @@ public class TokenUtil {
      *
      * @return the separator bytes used in token serialization
      */
-    public static byte[] getTokenPartSeparatorBytes() {
-        return TOKEN_PART_SEPARATOR_BYTES;
+    public synchronized static String getTokenPrefix() {
+        return TOKEN_PREFIX;
     }
 
 }

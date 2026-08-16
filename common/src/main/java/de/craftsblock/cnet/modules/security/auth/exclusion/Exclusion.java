@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
  * @see Scheme
  * @since 1.0.0
  */
-public sealed interface Exclusion permits Exclusion.HttpExclusion, Exclusion.WebSocketExclusion {
+interface Exclusion {
 
     /**
      * Returns the network scheme this exclusion applies to.
@@ -48,14 +48,17 @@ public sealed interface Exclusion permits Exclusion.HttpExclusion, Exclusion.Web
      */
     static Pattern sanitizePattern(@RegExp String path) {
         String sanitized = path.trim()
-                .replaceAll("//+", "/")
-                .replaceAll("/$", "/?");
-        if (!sanitized.startsWith("/")) {
-            return Pattern.compile("/" + sanitized);
-        }
+                .replaceAll("/{2,}", "/")
+                .replaceAll("/$", "/?")
+                .replaceAll("^\\^+|\\$+$", "");
 
-        return Pattern.compile(sanitized);
+        return Pattern.compile(
+                "^" +
+                        (sanitized.startsWith("/") ? sanitized : "/" + sanitized) +
+                        "$"
+        );
     }
+
 
     /**
      * Represents an HTTP-specific exclusion rule that additionally

@@ -51,7 +51,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * @since 1.0.0
  */
 @ApiStatus.Internal
-@AutoRegister(startup = Startup.LOAD, instantiate = Instantiate.NEW)
+@AutoRegister(startup = Startup.LOAD)
 public class WebSocketTokenAuthAdapter implements ListenerAdapter, AuthAdapter.WebSocket {
 
     private static final @NotNull String MESSAGE_LITERAL_WRONG_AUTH = "Not allowed!";

@@ -74,8 +74,9 @@ public class GroupResolveMiddleware implements ListenerAdapter {
             return;
         }
 
-        final GroupRequest result = GroupRequest.fromMappings(mappings);
-        if (result.groups().isEmpty()) {
+        final GroupRequest request = GroupRequest.fromMappings(mappings);
+        if (request.groups().isEmpty()) {
+            context.put(new UsedGroups(Collections.emptyList()));
             return;
         }
 
@@ -90,9 +91,8 @@ public class GroupResolveMiddleware implements ListenerAdapter {
         }
 
         final Token token = context.getTyped(Token.class);
-        if (token.groupNames().containsAll(result.groups())) {
-            context.remove(GroupRequest.class);
-            context.put(new UsedGroups(Collections.unmodifiableList(result.groups())));
+        if (token.groupNames().containsAll(request.groups())) {
+            context.put(new UsedGroups(Collections.unmodifiableList(request.groups())));
             return;
         }
 

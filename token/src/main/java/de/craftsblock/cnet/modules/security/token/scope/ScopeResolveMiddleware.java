@@ -71,8 +71,9 @@ public class ScopeResolveMiddleware implements ListenerAdapter {
             return;
         }
 
-        final ScopeRequest result = ScopeRequest.fromMappings(mappings);
-        if (result.scopes().isEmpty()) {
+        final ScopeRequest request = ScopeRequest.fromMappings(mappings);
+        if (request.scopes().isEmpty()) {
+            context.put(new UsedScopes(Collections.emptyList()));
             return;
         }
 
@@ -87,9 +88,8 @@ public class ScopeResolveMiddleware implements ListenerAdapter {
         }
 
         final Token token = context.getTyped(Token.class);
-        if (token.scopes().containsAll(result.scopes())) {
-            context.remove(ScopeRequest.class);
-            context.put(new UsedScopes(Collections.unmodifiableList(result.scopes())));
+        if (token.scopes().containsAll(request.scopes())) {
+            context.put(Collections.unmodifiableList(request.scopes()));
             return;
         }
 

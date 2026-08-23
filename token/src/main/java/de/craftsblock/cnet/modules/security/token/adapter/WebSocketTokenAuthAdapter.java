@@ -156,7 +156,6 @@ public class WebSocketTokenAuthAdapter implements ListenerAdapter, AuthAdapter.W
             context.remove(RequireAuth.class);
             context.put(token);
             context.put(new Authenticated(System.currentTimeMillis()));
-            System.out.println("After auth: " + context);
             CraftsNetSecurity.getInstance().getListenerRegistry().call(new TokenUsedEvent(token, exchange));
         } catch (JsonSyntaxException ignored) {
             failAuth(client, "NOT A JSON");

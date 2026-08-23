@@ -157,7 +157,6 @@ public class GroupResolveMiddleware implements ListenerAdapter {
 
         final Context context = client.getContext();
         final UsedGroups usedGroups = UsedGroups.fromMappings(mappings);
-        System.out.println(usedGroups);
         context.put(usedGroups);
     }
 

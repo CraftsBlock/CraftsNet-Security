@@ -55,22 +55,17 @@ public class WebSocketRevalidateCacheListener implements ListenerAdapter {
      */
     @EventHandler
     public void handleCacheRevalidation(RevalidateCacheEvent<?> event) {
+        var authenticatedClients = WebSocketTokenAuthAdapter.getAuthenticatedClients();
         if (event instanceof RevalidateTokenCacheEvent && event.hasSubject()) {
-            Collection<WebSocketClient> clients = WebSocketTokenAuthAdapter
-                    .getAuthenticatedClients()
-                    .get(event.getSubject());
+            Collection<WebSocketClient> clients = authenticatedClients.get(event.getSubject());
 
-            if (clients == null || clients.isEmpty()) {
+            if (clients != null && !clients.isEmpty()) {
+                clients.forEach(this::revalidateWebSocketClient);
                 return;
             }
-
-            clients.forEach(this::revalidateWebSocketClient);
-            return;
         }
 
-        for (Collection<WebSocketClient> clients : WebSocketTokenAuthAdapter
-                .getAuthenticatedClients()
-                .values()) {
+        for (Collection<WebSocketClient> clients : authenticatedClients.values()) {
             clients.forEach(this::revalidateWebSocketClient);
         }
     }

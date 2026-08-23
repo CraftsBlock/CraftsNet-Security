@@ -11,7 +11,7 @@ import java.lang.annotation.*;
  * or endpoint handlers.
  * <p>
  * The declared scope values are injected into the request or WebSocket
- * context as a {@link ScopeRequest} and later validated by {@link ScopeResolveMiddleware}.
+ * context as a {@link UsedScopes} and later validated by {@link ScopeResolveMiddleware}.
  * <p>
  * If a request does not provide a token containing all required scopes,
  * access to the endpoint will be denied during the authentication pipeline.

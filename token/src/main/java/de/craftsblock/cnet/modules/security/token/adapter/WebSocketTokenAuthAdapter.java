@@ -7,6 +7,8 @@ import de.craftsblock.cnet.modules.security.auth.adapter.AuthAdapter;
 import de.craftsblock.cnet.modules.security.token.Token;
 import de.craftsblock.cnet.modules.security.token.TokenManager;
 import de.craftsblock.cnet.modules.security.token.event.TokenUsedEvent;
+import de.craftsblock.cnet.modules.security.token.group.UsedGroups;
+import de.craftsblock.cnet.modules.security.token.scope.UsedScopes;
 import de.craftsblock.craftscore.event.EventHandler;
 import de.craftsblock.craftscore.event.EventPriority;
 import de.craftsblock.craftscore.event.ListenerAdapter;
@@ -146,15 +148,16 @@ public class WebSocketTokenAuthAdapter implements ListenerAdapter, AuthAdapter.W
                 return;
             }
 
-            context.put(token);
-            context.put(new Authenticated(System.currentTimeMillis()));
-            context.remove(RequireAuth.class);
-            CraftsNetSecurity.getInstance().getListenerRegistry().call(new TokenUsedEvent(token, exchange));
-
             synchronized (AUTHENTICATED_CLIENTS) {
                 AUTHENTICATED_CLIENTS.computeIfAbsent(token.id(), id -> new ConcurrentLinkedQueue<>())
                         .add(client);
             }
+
+            context.remove(RequireAuth.class);
+            context.put(token);
+            context.put(new Authenticated(System.currentTimeMillis()));
+            System.out.println("After auth: " + context);
+            CraftsNetSecurity.getInstance().getListenerRegistry().call(new TokenUsedEvent(token, exchange));
         } catch (JsonSyntaxException ignored) {
             failAuth(client, "NOT A JSON");
         }

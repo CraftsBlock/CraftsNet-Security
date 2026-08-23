@@ -11,7 +11,7 @@ import java.lang.annotation.*;
  * for routes, controller methods, or WebSocket endpoints.
  * <p>
  * When applied, this annotation is processed by the CraftsNet requirement
- * system and results in a {@link GroupRequest} being injected into the
+ * system and results in a {@link UsedGroups} being injected into the
  * request context. The {@link GroupResolveMiddleware} then validates
  * whether the authenticated token contains all required groups.
  * <p>
